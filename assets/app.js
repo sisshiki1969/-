@@ -214,27 +214,26 @@ function renderTierReference() {
     </div>`;
 }
 
+function buildFormula(pt1, pt2, tierKey) {
+  const pt1Span = `<span class="text-base font-bold text-slate-900">${pt1}</span><span class="text-xs text-slate-500">点（Ⅰ）</span>`;
+  if (pt2 == null) {
+    return `${pt1Span} <span class="text-slate-400">＝</span> <span class="text-lg font-bold text-emerald-700">${pt1}</span><span class="text-xs text-slate-500">点</span>`;
+  }
+  const pt2Span = `<span class="text-base font-bold text-brand-700">${pt2}</span><span class="text-xs text-slate-500">点（Ⅱ ${tierKey}）</span>`;
+  const total = pt1 + pt2;
+  return `${pt1Span} <span class="text-slate-400">＋</span> ${pt2Span} <span class="text-slate-400">＝</span> <span class="text-lg font-bold text-emerald-700">${total}</span><span class="text-xs text-slate-500">点</span>`;
+}
+
 function render(r) {
   // 3か月平均
   $('avg-new').textContent = num1.format(r.avgNew);
   $('avg-rep').textContent = num1.format(r.avgRep);
 
-  // 適用点数
-  $('r-pt1-new').textContent = r.pt1.new;
-  $('r-pt1-rep').textContent = r.pt1.rep;
-  if (r.useTier) {
-    $('r-pt2-new').textContent = r.useTier.new;
-    $('r-pt2-rep').textContent = r.useTier.rep;
-    $('r-tier-name').textContent = '・' + r.useTier.key;
-    $('r-pt2-new-wrap').classList.remove('opacity-30');
-    $('r-pt2-rep-wrap').classList.remove('opacity-30');
-  } else {
-    $('r-pt2-new').textContent = '―';
-    $('r-pt2-rep').textContent = '―';
-    $('r-tier-name').textContent = '';
-    $('r-pt2-new-wrap').classList.add('opacity-30');
-    $('r-pt2-rep-wrap').classList.add('opacity-30');
-  }
+  // 適用点数（式形式）
+  $('r-formula-new').innerHTML = buildFormula(r.pt1.new, r.useTier ? r.useTier.new : null, r.useTier ? r.useTier.key : null);
+  $('r-formula-rep').innerHTML = buildFormula(r.pt1.rep, r.useTier ? r.useTier.rep : null, r.useTier ? r.useTier.key : null);
+  $('r-formula-new').classList.remove('text-slate-400');
+  $('r-formula-rep').classList.remove('text-slate-400');
 
   // 増収額
   $('r-rev1-monthly').textContent = yen.format(Math.round(r.rev1Monthly));
@@ -272,6 +271,37 @@ function render(r) {
       <td class="px-3 py-2" colspan="3">月額合計</td>
       <td class="px-3 py-2 text-right font-mono tabular-nums">${num.format(Math.round(r.rev1Monthly))}</td>
     </tr>`;
+
+  // (Ⅱ) 内訳
+  const tierLabelEl = $('rev2-tier-label');
+  const rev2Body    = $('rev2-breakdown');
+  if (r.useTier) {
+    tierLabelEl.textContent = `／ ${r.useTier.key}`;
+    const r2NewMonthly = r.avgNew * r.useTier.new * POINT_YEN;
+    const r2RepMonthly = r.avgRep * r.useTier.rep * POINT_YEN;
+    const r2Rows = [
+      ['初診', r.useTier.new, r.avgNew, r2NewMonthly],
+      ['再診', r.useTier.rep, r.avgRep, r2RepMonthly],
+    ];
+    rev2Body.innerHTML = r2Rows.map(([label, pt, cnt, monthly]) => `
+      <tr>
+        <td class="px-3 py-2">${label}</td>
+        <td class="px-3 py-2 text-right font-mono tabular-nums">${pt}点</td>
+        <td class="px-3 py-2 text-right font-mono tabular-nums">${num1.format(cnt)}</td>
+        <td class="px-3 py-2 text-right font-mono tabular-nums">${num.format(Math.round(monthly))}</td>
+      </tr>
+    `).join('') + `
+      <tr class="bg-slate-50 font-medium">
+        <td class="px-3 py-2" colspan="3">月額合計</td>
+        <td class="px-3 py-2 text-right font-mono tabular-nums">${num.format(Math.round(r.rev2Monthly))}</td>
+      </tr>`;
+  } else {
+    tierLabelEl.textContent = '';
+    const msg = r.input.revType === '1-and-2'
+      ? '左の区分テーブルから区分を選択してください'
+      : '「(Ⅰ)+(Ⅱ)を算定」を選択し区分を選ぶと表示されます';
+    rev2Body.innerHTML = `<tr><td class="px-3 py-2" colspan="4"><span class="text-slate-400">${msg}</span></td></tr>`;
+  }
 
   // 手当原資計算過程
   const steps = [
