@@ -4,16 +4,10 @@
 const POINT_YEN = 10;
 const WELFARE_RATIO = 0.165; // 法定福利費 事業主負担（健保・厚年・労災・子育拠出金等の概算）
 
-// 評価料(Ⅰ) 点数表（開始時期 × 賃上げ区分）
+// 評価料(Ⅰ) 点数表（令和8年6月～、賃上げ区分別）
 const REV1_POINTS_TABLE = {
-  'existing': {
-    standard:   { new: 6, rep: 2 },
-    continuous: { new: 6, rep: 2 }, // 既算定（旧版）は賃上げ区分なし
-  },
-  'new-2026-06': {
-    standard:   { new: 17, rep: 4 },
-    continuous: { new: 23, rep: 6 },
-  },
+  standard:   { new: 17, rep: 4 },
+  continuous: { new: 23, rep: 6 },
 };
 
 // 評価料(Ⅱ) 区分表（無床診療所）
@@ -65,19 +59,17 @@ function readInputs() {
     m2Rep: Math.max(0, Number($('m2-rep').value || 0)),
     m3New: Math.max(0, Number($('m3-new').value || 0)),
     m3Rep: Math.max(0, Number($('m3-rep').value || 0)),
-    revType:     radioVal('rev-type')     || '1-only',
-    startTiming: radioVal('start-timing') || 'new-2026-06',
-    raiseType:   radioVal('raise-type')   || 'standard',
+    revType:   radioVal('rev-type')   || '1-only',
+    raiseType: radioVal('raise-type') || 'standard',
     staffCount:  Math.max(1, Number($('staff-count').value || 1)),
   };
 }
 
 function getRev1Points(input) {
-  return REV1_POINTS_TABLE[input.startTiming][input.raiseType];
+  return REV1_POINTS_TABLE[input.raiseType];
 }
 
 function getRev2Tiers(input) {
-  if (input.startTiming === 'existing') return REV2_TIERS.standard;
   return input.raiseType === 'continuous' ? REV2_TIERS.continuous : REV2_TIERS.standard;
 }
 
@@ -294,21 +286,7 @@ function render(r) {
   renderTierTable(r);
 }
 
-function updateRaiseTypeAvailability() {
-  const timing = radioVal('start-timing');
-  const group = $('raise-type-group');
-  const inputs = group.querySelectorAll('input[type="radio"]');
-  if (timing === 'existing') {
-    group.classList.add('opacity-50', 'pointer-events-none');
-    inputs.forEach(i => i.disabled = true);
-  } else {
-    group.classList.remove('opacity-50', 'pointer-events-none');
-    inputs.forEach(i => i.disabled = false);
-  }
-}
-
 function onCalc() {
-  updateRaiseTypeAvailability();
   const input = readInputs();
   const result = calculate(input);
   render(result);
@@ -325,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('print-btn').addEventListener('click', () => window.print());
 
   // パターン変更時は手動選択をクリアして再計算
-  document.querySelectorAll('input[name="rev-type"], input[name="start-timing"], input[name="raise-type"]')
+  document.querySelectorAll('input[name="rev-type"], input[name="raise-type"]')
     .forEach(el => el.addEventListener('change', () => { selectedTierId = null; onCalc(); }));
 
   $('sim-form').addEventListener('input', onCalc);
