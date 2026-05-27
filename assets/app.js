@@ -302,12 +302,19 @@ document.addEventListener('DOMContentLoaded', () => {
   $('reset-btn').addEventListener('click', onReset);
   $('print-btn').addEventListener('click', () => window.print());
 
-  // パターン変更時は手動選択をクリアして再計算
+  // 数値入力欄ごとに input/change を直接リッスン
+  ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep', 'staff-count'].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener('input',  onCalc);
+    el.addEventListener('change', onCalc);
+  });
+
+  // ラジオ変更時は手動選択をクリアして再計算
   document.querySelectorAll('input[name="rev-type"], input[name="raise-type"]')
     .forEach(el => el.addEventListener('change', () => { selectedTierId = null; onCalc(); }));
 
-  $('sim-form').addEventListener('input', onCalc);
-
+  // Enterで再計算
   $('sim-form').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
       e.preventDefault();
