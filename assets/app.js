@@ -250,7 +250,10 @@ function render(r) {
   $('r-allow-base').textContent  = yen.format(Math.round(r.totalMonthly));
   $('r-welfare').textContent     = '− ' + yen.format(Math.round(r.welfareCost));
   $('r-allowance').textContent   = yen.format(Math.round(r.allowanceMonthly));
-  $('r-allowance-per').textContent = yen.format(Math.round(r.allowancePerStaff)) + ' / 月';
+  $('r-allowance-yearly').textContent = yen.format(Math.round(r.allowanceMonthly * 12));
+  $('r-allowance-per').textContent = yen.format(Math.round(r.allowancePerStaff));
+  $('r-allowance-per-yearly').textContent = yen.format(Math.round(r.allowancePerStaff * 12));
+  $('r-staff-display').textContent = num.format(r.input.staffCount);
 
   // (Ⅰ) 内訳
   const rows = [
@@ -275,7 +278,7 @@ function render(r) {
     `月間想定増収額 (Ⅰ+Ⅱ)：<span class="font-mono">${num.format(Math.round(r.totalMonthly))} 円</span>`,
     `事業主負担の社会保険料増（16.5%）：<span class="font-mono">${num.format(Math.round(r.welfareCost))} 円</span>`,
     `手当原資（月額）：${num.format(Math.round(r.totalMonthly))} ÷ 1.165 ＝ <span class="font-mono font-semibold text-emerald-700">${num.format(Math.round(r.allowanceMonthly))} 円</span>`,
-    `1人あたり目安：${num.format(Math.round(r.allowanceMonthly))} ÷ ${r.input.staffCount} 人 ＝ <span class="font-mono font-semibold text-emerald-700">${num.format(Math.round(r.allowancePerStaff))} 円/月</span>`,
+    `1人あたりベースアップ額（月額）：${num.format(Math.round(r.allowanceMonthly))} ÷ ${r.input.staffCount} 人 ＝ <span class="font-mono font-semibold text-emerald-700">${num.format(Math.round(r.allowancePerStaff))} 円/月</span>`,
   ];
   $('allow-steps').innerHTML = steps.map((s, i) => `
     <li class="flex gap-2">

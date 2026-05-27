@@ -199,6 +199,21 @@
             </div>
           </fieldset>
         </div>
+
+        <!-- ベースアップ対象従業員数 -->
+        <div class="mt-5 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+          <label class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              <span class="block text-sm font-medium text-slate-900">ベースアップ対象従業員数</span>
+              <span class="block text-[11px] text-slate-500">看護職員・薬剤師・事務職員等のうち医師・歯科医師を除いた人数（常勤換算）</span>
+            </span>
+            <span class="flex items-center">
+              <input id="staff-count" type="number" inputmode="numeric" min="1" value="6"
+                class="w-24 rounded-l-md border-slate-300 px-3 py-2 text-right font-mono text-sm tabular-nums shadow-sm focus:border-brand-600 focus:ring-brand-600" />
+              <span class="inline-flex items-center rounded-r-md border border-l-0 border-slate-300 bg-white px-3 py-2 text-xs text-slate-500">人</span>
+            </span>
+          </label>
+        </div>
       </section>
 
       <!-- (II) 区分選択テーブル -->
@@ -281,7 +296,7 @@
       <section id="step4" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
         <div class="flex items-center gap-3">
           <span class="grid h-7 w-7 place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">4</span>
-          <h2 class="text-sm font-semibold text-slate-900">手当原資（月額）</h2>
+          <h2 class="text-sm font-semibold text-slate-900">手当原資 / 1人あたりベースアップ額</h2>
         </div>
 
         <div class="mt-4 space-y-2 text-sm">
@@ -296,15 +311,19 @@
         </div>
 
         <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-          <div class="text-[11px] font-medium text-emerald-700">手当原資（月額）</div>
+          <div class="text-[11px] font-medium text-emerald-700">手当原資（月額合計）</div>
           <div id="r-allowance" class="mt-0.5 font-mono text-2xl font-bold tabular-nums text-emerald-900">― 円</div>
-          <div class="mt-1 text-[11px] text-emerald-800">対象職員1人あたり目安：<span id="r-allowance-per" class="font-mono tabular-nums">―</span></div>
+          <div class="mt-1 text-[11px] text-emerald-800">年額換算：<span id="r-allowance-yearly" class="font-mono tabular-nums">―</span></div>
         </div>
 
-        <label class="mt-3 flex items-center justify-between text-xs text-slate-600">
-          <span>対象職員数（手当目安算出用）</span>
-          <input id="staff-count" type="number" inputmode="numeric" min="1" value="6" class="ml-2 w-20 rounded border-slate-300 px-2 py-1 text-right font-mono text-xs tabular-nums shadow-sm focus:border-brand-600 focus:ring-brand-600" />
-        </label>
+        <div class="mt-3 rounded-lg bg-emerald-700 p-4 text-white">
+          <div class="text-[11px] font-medium text-emerald-100">1人あたりベースアップ額（月額）</div>
+          <div id="r-allowance-per" class="mt-0.5 font-mono text-2xl font-bold tabular-nums">― 円</div>
+          <div class="mt-1 text-[11px] text-emerald-100">
+            年額換算：<span id="r-allowance-per-yearly" class="font-mono tabular-nums">―</span>
+            ／ 対象 <span id="r-staff-display" class="font-mono tabular-nums">―</span> 人
+          </div>
+        </div>
       </section>
 
       <p class="text-[11px] leading-relaxed text-slate-500">
