@@ -1,0 +1,48 @@
+/* 細かなUI微調整・印刷スタイル */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* number入力のスピナーを軽く */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  opacity: 0.4;
+}
+
+/* details開閉時の矢印 */
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* 印刷用スタイル */
+@media print {
+  header,
+  footer,
+  #print-btn,
+  #reset-btn,
+  #calc-btn,
+  nav,
+  #faq,
+  .sticky {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  section {
+    break-inside: avoid;
+  }
+
+  .shadow-card {
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+}
