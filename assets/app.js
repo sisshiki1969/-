@@ -45,6 +45,49 @@ const num1 = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1 });
 // 状態：手動選択された(Ⅱ)区分ID（nullなら未選択＝(Ⅱ)算定しない）
 let selectedTierId = null;
 
+const STORAGE_KEY = 'baseup-simulator-v1';
+
+const PERSIST_NUMBER_IDS = ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep', 'staff-count'];
+const PERSIST_RADIO_NAMES = ['rev-type', 'raise-type'];
+
+function saveState() {
+  const data = { nums: {}, radios: {}, tierId: selectedTierId };
+  PERSIST_NUMBER_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data.nums[id] = el.value;
+  });
+  PERSIST_RADIO_NAMES.forEach(name => {
+    const v = radioVal(name);
+    if (v != null) data.radios[name] = v;
+  });
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
+}
+
+function loadState() {
+  let data;
+  try { data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) { data = null; }
+  if (!data) return;
+  if (data.nums) {
+    Object.entries(data.nums).forEach(([id, v]) => {
+      const el = document.getElementById(id);
+      if (el && v != null && v !== '') el.value = v;
+    });
+  }
+  if (data.radios) {
+    Object.entries(data.radios).forEach(([name, v]) => {
+      const el = document.querySelector(`input[name="${name}"][value="${v}"]`);
+      if (el) el.checked = true;
+    });
+  }
+  if (typeof data.tierId === 'number') {
+    selectedTierId = data.tierId;
+  }
+}
+
+function clearState() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+}
+
 function $(id) { return document.getElementById(id); }
 function radioVal(name) {
   const el = document.querySelector(`input[name="${name}"]:checked`);
@@ -323,10 +366,13 @@ function onCalc() {
   const input = readInputs();
   const result = calculate(input);
   render(result);
+  saveState();
 }
 
 function onReset() {
   selectedTierId = null;
+  clearState();
+  // type="reset" でフォームがデフォルト値に戻るのを待ってから再計算
   setTimeout(() => onCalc(), 0);
 }
 
@@ -355,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  loadState();
   renderTierReference();
   onCalc();
 });
