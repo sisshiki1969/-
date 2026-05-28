@@ -226,37 +226,6 @@ function renderTierTable(r) {
   });
 }
 
-function renderTierReference() {
-  const ref = $('tier-reference');
-  const cols = (tiers, title, colorCls) => `
-    <div>
-      <div class="mb-1 text-xs font-medium ${colorCls}">${title}</div>
-      <table class="w-full border-separate border-spacing-0 text-xs">
-        <thead>
-          <tr class="text-[10px] text-slate-500">
-            <th class="border border-slate-200 bg-slate-50 px-2 py-1 text-left">区分</th>
-            <th class="border border-l-0 border-slate-200 bg-slate-50 px-2 py-1 text-right">初診</th>
-            <th class="border border-l-0 border-slate-200 bg-slate-50 px-2 py-1 text-right">再診</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${tiers.map(t => `
-            <tr>
-              <td class="border border-t-0 border-slate-200 px-2 py-1">${t.key}</td>
-              <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1 text-right font-mono">${t.new}点</td>
-              <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1 text-right font-mono">${t.rep}点</td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
-
-  ref.innerHTML = `
-    <div class="grid gap-4 sm:grid-cols-2">
-      ${cols(REV2_TIERS.standard,   '通常賃上げ（8区分）',     'text-slate-700')}
-      ${cols(REV2_TIERS.continuous, '継続的賃上げ実施（12区分）', 'text-brand-700')}
-    </div>`;
-}
-
 function buildFormula(pt1, pt2, tierKey) {
   const pt1Span = `<span class="text-base font-bold text-slate-900">${pt1}</span><span class="text-xs text-slate-500">点（Ⅰ）</span>`;
   if (pt2 == null) {
@@ -402,6 +371,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   loadState();
-  renderTierReference();
   onCalc();
 });
