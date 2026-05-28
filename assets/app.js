@@ -163,7 +163,11 @@ function calculate(input) {
 
 function renderTierTable(r) {
   const wrap = $('tier-table-wrap');
+  const section = $('tier-selector');
   const enabled = r.input.revType === '1-and-2';
+
+  // (Ⅰ)のみのときは区分選択セクションを印刷対象から除外
+  section.classList.toggle('no-print', !enabled);
 
   if (!enabled) {
     wrap.innerHTML = `<div class="rounded-md bg-slate-50 p-4 text-center text-sm text-slate-500">
@@ -175,7 +179,7 @@ function renderTierTable(r) {
   const rows = r.tierEvals.map(t => {
     const isSelected = r.useTier && r.useTier.id === t.id;
     const rowCls = isSelected
-      ? 'bg-brand-100 ring-2 ring-brand-600'
+      ? 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'
       : 'bg-white hover:bg-slate-50';
     const yearly = t.monthly * 12;
 
@@ -192,7 +196,7 @@ function renderTierTable(r) {
   }).join('');
 
   const clearRow = `
-    <tr data-tier-id="0" class="cursor-pointer transition ${r.useTier ? 'bg-white hover:bg-slate-50' : 'bg-brand-100 ring-2 ring-brand-600'}">
+    <tr data-tier-id="0" class="cursor-pointer transition ${r.useTier ? 'bg-white hover:bg-slate-50' : 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'}">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${!r.useTier ? '<span class="mr-1 text-brand-700">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
         (Ⅱ) を算定しない
@@ -287,6 +291,7 @@ function render(r) {
   // (Ⅱ) 内訳
   const tierLabelEl = $('rev2-tier-label');
   const rev2Body    = $('rev2-breakdown');
+  $('rev2-card').classList.toggle('no-print', !r.useTier);
   if (r.useTier) {
     tierLabelEl.textContent = `／ ${r.useTier.key}`;
     const r2NewMonthly = r.avgNew * r.useTier.new * POINT_YEN;

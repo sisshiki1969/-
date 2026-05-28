@@ -24,6 +24,7 @@ summary::-webkit-details-marker {
   #calc-btn,
   nav,
   #faq,
+  .no-print,
   .sticky {
     display: none !important;
   }
@@ -44,5 +45,15 @@ summary::-webkit-details-marker {
   .shadow-card {
     box-shadow: none !important;
     border: 1px solid #cbd5e1 !important;
+  }
+
+  /* ラジオ選択肢は選択中のものだけ印刷 */
+  label:has(> input[type="radio"]:not(:checked)) {
+    display: none !important;
+  }
+
+  /* (Ⅱ)区分テーブルは選択中の行だけ印刷 */
+  #tier-table-wrap tr[data-tier-id]:not(.tier-row-selected) {
+    display: none !important;
   }
 }

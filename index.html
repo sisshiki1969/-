@@ -61,7 +61,7 @@
 </header>
 
 <!-- ヒーロー -->
-<section class="border-b border-slate-200 bg-gradient-to-b from-brand-50/70 to-white">
+<section class="no-print border-b border-slate-200 bg-gradient-to-b from-brand-50/70 to-white">
   <div class="mx-auto max-w-6xl px-4 py-9 sm:px-6 sm:py-12">
     <div class="max-w-3xl">
       <span class="inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-800">
@@ -156,7 +156,7 @@
           <span class="grid h-7 w-7 place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">2</span>
           <h2 class="text-base font-semibold text-slate-900">算定パターンを選択</h2>
         </div>
-        <p class="mt-2 text-xs text-slate-500">無床診療所限定。令和8年6月からの点数に基づき、算定する評価料の種別と賃上げ区分を選択してください。</p>
+        <p class="no-print mt-2 text-xs text-slate-500">無床診療所限定。令和8年6月からの点数に基づき、算定する評価料の種別と賃上げ区分を選択してください。</p>
 
         <div class="mt-5 grid gap-5 sm:grid-cols-2">
           <fieldset>
@@ -219,7 +219,7 @@
       <!-- (II) 区分選択テーブル -->
       <section id="tier-selector" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
         <h2 class="text-base font-semibold text-slate-900">評価料(Ⅱ) 区分を選択</h2>
-        <p class="mt-1 text-xs text-slate-500">行をクリックして区分を選択してください。選択した区分が右側の試算に反映されます。</p>
+        <p class="no-print mt-1 text-xs text-slate-500">行をクリックして区分を選択してください。選択した区分が右側の試算に反映されます。</p>
         <div id="tier-table-wrap" class="mt-4 overflow-x-auto">
           <!-- JSで生成 -->
         </div>
@@ -347,7 +347,7 @@
       </div>
     </div>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
+    <div id="rev2-card" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
       <h2 class="text-sm font-semibold text-slate-900">評価料(Ⅱ) 月額の内訳 <span id="rev2-tier-label" class="ml-1 text-xs font-normal text-brand-700"></span></h2>
       <div class="mt-4 overflow-hidden rounded-lg border border-slate-200">
         <table class="min-w-full divide-y divide-slate-200 text-sm">
