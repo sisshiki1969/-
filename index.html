@@ -84,8 +84,43 @@
 
   <form id="sim-form" class="grid gap-6 lg:grid-cols-5">
 
+    <!-- 操作ガイド -->
+    <div class="no-print lg:col-span-5 rounded-xl border border-brand-200 bg-brand-50/70 p-4 sm:p-5">
+      <div class="text-sm font-semibold text-brand-900">使い方（①→②→③ の番号順に入力するだけ）</div>
+      <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-1.5">
+        <div class="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-sm">
+          <span class="grid h-6 w-6 flex-none place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">1</span>
+          <span class="text-sm text-slate-700">3か月分の回数を入力</span>
+        </div>
+        <span class="hidden text-brand-400 sm:inline">→</span>
+        <div class="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-sm">
+          <span class="grid h-6 w-6 flex-none place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">2</span>
+          <span class="text-sm text-slate-700">算定パターンと人数を選ぶ</span>
+        </div>
+        <span class="hidden text-brand-400 sm:inline">→</span>
+        <div class="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-sm">
+          <span class="grid h-6 w-6 flex-none place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">3</span>
+          <span class="text-sm text-slate-700">（必要なら）区分を選ぶ</span>
+        </div>
+        <span class="hidden text-emerald-500 sm:inline">⇒</span>
+        <div class="flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-white shadow-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <span class="text-sm font-medium">結果が自動で表示されます</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 左カラム：入力 -->
     <div class="space-y-6 lg:col-span-3">
+
+      <!-- 入力カラム見出し -->
+      <div class="flex items-center gap-2 border-b-2 border-brand-200 pb-2">
+        <span class="inline-flex items-center gap-1.5 rounded-md bg-brand-700 px-2.5 py-1 text-xs font-bold text-white">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          入力
+        </span>
+        <span class="text-xs text-slate-500">あなたが入力する欄です</span>
+      </div>
 
       <!-- ステップ1: 3か月分の算定回数 -->
       <section id="step1" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
@@ -154,7 +189,7 @@
       <section id="step2" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
         <div class="flex items-center gap-3">
           <span class="grid h-7 w-7 place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">2</span>
-          <h2 class="text-base font-semibold text-slate-900">算定パターンを選択</h2>
+          <h2 class="text-base font-semibold text-slate-900">算定パターンと対象人数を選ぶ</h2>
         </div>
         <p class="no-print mt-2 text-xs text-slate-500">無床診療所限定。令和8年6月からの点数に基づき、算定する評価料の種別と賃上げ区分を選択してください。</p>
 
@@ -218,8 +253,11 @@
 
       <!-- (II) 区分選択テーブル -->
       <section id="tier-selector" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
-        <h2 class="text-base font-semibold text-slate-900">評価料(Ⅱ) 区分を選択</h2>
-        <p class="no-print mt-1 text-xs text-slate-500">行をクリックして区分を選択してください。選択した区分が右側の試算に反映されます。</p>
+        <div class="flex items-center gap-3">
+          <span class="grid h-7 w-7 place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">3</span>
+          <h2 class="text-base font-semibold text-slate-900">評価料(Ⅱ) の区分を選ぶ</h2>
+        </div>
+        <p class="no-print mt-2 text-xs text-slate-500">②で「(Ⅰ)+(Ⅱ)を算定」を選んだ場合のみ。表の行をクリックして区分を選んでください。</p>
         <div id="tier-table-wrap" class="mt-4 overflow-x-auto">
           <!-- JSで生成 -->
         </div>
@@ -244,6 +282,15 @@
     <!-- 右カラム：結果サマリー -->
     <aside class="lg:col-span-2 lg:sticky lg:top-20 self-start space-y-4">
 
+      <!-- 結果カラム見出し -->
+      <div class="flex items-center gap-2 border-b-2 border-emerald-200 pb-2">
+        <span class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          結果
+        </span>
+        <span class="text-xs text-slate-500">入力すると自動で計算されます（入力不要）</span>
+      </div>
+
       <!-- 適用点数 -->
       <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
         <h2 class="text-sm font-semibold text-slate-900">適用される点数</h2>
@@ -259,10 +306,13 @@
         </div>
       </section>
 
-      <!-- ステップ3: 増収額 -->
+      <!-- 結果: 増収額 -->
       <section id="step3" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
-        <div class="flex items-center gap-3">
-          <span class="grid h-7 w-7 place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">3</span>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            自動計算
+          </span>
           <h2 class="text-sm font-semibold text-slate-900">月間想定増収額</h2>
         </div>
 
@@ -284,10 +334,13 @@
         </div>
       </section>
 
-      <!-- ステップ4: 手当額 -->
+      <!-- 結果: 手当額 -->
       <section id="step4" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
-        <div class="flex items-center gap-3">
-          <span class="grid h-7 w-7 place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">4</span>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            自動計算
+          </span>
           <h2 class="text-sm font-semibold text-slate-900">手当原資 / 1人あたりベースアップ額</h2>
         </div>
 
