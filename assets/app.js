@@ -347,6 +347,7 @@ function render(r) {
 
 function onCalc() {
   const input = readInputs();
+  renderAverages();
   if (!input.complete) {
     renderIncomplete();
     saveState();
@@ -357,12 +358,24 @@ function onCalc() {
   saveState();
 }
 
+// 3か月平均は回数6欄が揃えば、対象人数の有無に関係なく表示する
+function renderAverages() {
+  const countIds = ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep'];
+  const allFilled = countIds.every(id => $(id).value.trim() !== '');
+  if (!allFilled) {
+    $('avg-new').textContent = '―';
+    $('avg-rep').textContent = '―';
+    return;
+  }
+  const avgNew = (Number($('m1-new').value || 0) + Number($('m2-new').value || 0) + Number($('m3-new').value || 0)) / 3;
+  const avgRep = (Number($('m1-rep').value || 0) + Number($('m2-rep').value || 0) + Number($('m3-rep').value || 0)) / 3;
+  $('avg-new').textContent = num1.format(avgNew);
+  $('avg-rep').textContent = num1.format(avgRep);
+}
+
 // 必須項目が未入力のときの表示（結果を伏せて案内を出す）
 function renderIncomplete() {
   $('result-notice').classList.remove('hidden');
-
-  $('avg-new').textContent = '―';
-  $('avg-rep').textContent = '―';
 
   $('r-formula-new').innerHTML = '―';
   $('r-formula-rep').innerHTML = '―';
