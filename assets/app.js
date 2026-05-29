@@ -375,6 +375,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 印刷時は計算詳細を一時的に開く
+  window.addEventListener('beforeprint', () => {
+    const d = $('detail-disclosure');
+    if (d) { d.dataset.wasOpen = d.open ? '1' : '0'; d.open = true; }
+  });
+  window.addEventListener('afterprint', () => {
+    const d = $('detail-disclosure');
+    if (d && d.dataset.wasOpen === '0') d.open = false;
+  });
+
   loadState();
   onCalc();
 });
