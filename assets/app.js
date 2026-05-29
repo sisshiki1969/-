@@ -94,23 +94,33 @@ function radioVal(name) {
   return el ? el.value : null;
 }
 
-const REQUIRED_NUMBER_IDS = ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep', 'staff-count'];
+const COUNT_NEW_IDS = ['m1-new', 'm2-new', 'm3-new'];
+const COUNT_REP_IDS = ['m1-rep', 'm2-rep', 'm3-rep'];
+const COUNT_IDS = ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep'];
+
+// 空欄を除いた平均（全て空欄なら0）
+function avgOfFilled(ids) {
+  const vals = ids
+    .map(id => $(id).value.trim())
+    .filter(v => v !== '')
+    .map(v => Math.max(0, Number(v) || 0));
+  if (vals.length === 0) return 0;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
 
 function readInputs() {
-  const filled = REQUIRED_NUMBER_IDS.every(id => $(id).value.trim() !== '');
-  const staffCount = Number($('staff-count').value);
-  const complete = filled && Number.isFinite(staffCount) && staffCount >= 1;
+  const anyCount = COUNT_IDS.some(id => $(id).value.trim() !== '');
+  const staffRaw = $('staff-count').value.trim();
+  const staffNum = Number(staffRaw);
+  const hasStaff = staffRaw !== '' && Number.isFinite(staffNum) && staffNum >= 1;
   return {
-    m1New: Math.max(0, Number($('m1-new').value || 0)),
-    m1Rep: Math.max(0, Number($('m1-rep').value || 0)),
-    m2New: Math.max(0, Number($('m2-new').value || 0)),
-    m2Rep: Math.max(0, Number($('m2-rep').value || 0)),
-    m3New: Math.max(0, Number($('m3-new').value || 0)),
-    m3Rep: Math.max(0, Number($('m3-rep').value || 0)),
+    avgNew: avgOfFilled(COUNT_NEW_IDS),
+    avgRep: avgOfFilled(COUNT_REP_IDS),
     revType:   radioVal('rev-type')   || '1-only',
     raiseType: radioVal('raise-type') || 'continuous',
-    staffCount: Math.max(1, Number($('staff-count').value || 1)),
-    complete,
+    staffCount: hasStaff ? staffNum : null,
+    hasStaff,
+    anyCount,
   };
 }
 
@@ -123,9 +133,8 @@ function getRev2Tiers(input) {
 }
 
 function calculate(input) {
-  // 3か月平均
-  const avgNew = (input.m1New + input.m2New + input.m3New) / 3;
-  const avgRep = (input.m1Rep + input.m2Rep + input.m3Rep) / 3;
+  const avgNew = input.avgNew;
+  const avgRep = input.avgRep;
 
   // (Ⅰ) 月額
   const pt1 = getRev1Points(input);
@@ -155,7 +164,8 @@ function calculate(input) {
   // 手当原資（社保事業主負担増を控除）
   const allowanceMonthly = totalMonthly / (1 + WELFARE_RATIO);
   const welfareCost      = totalMonthly - allowanceMonthly;
-  const allowancePerStaff = allowanceMonthly / input.staffCount;
+  // 対象人数が未入力なら1人あたりは算出しない
+  const allowancePerStaff = input.hasStaff ? allowanceMonthly / input.staffCount : null;
 
   return {
     input, avgNew, avgRep,
@@ -250,9 +260,8 @@ function render(r) {
   // 入力待ち案内を隠す
   $('result-notice').classList.add('hidden');
 
-  // 3か月平均
-  $('avg-new').textContent = num1.format(r.avgNew);
-  $('avg-rep').textContent = num1.format(r.avgRep);
+  // 3か月平均（入力済みの欄のみ・空欄種別は「―」）
+  renderAverages();
 
   // 適用点数（式形式）
   $('r-formula-new').innerHTML = buildFormula(r.pt1.new, r.useTier ? r.useTier.new : null, r.useTier ? r.useTier.key : null);
@@ -348,7 +357,7 @@ function render(r) {
 function onCalc() {
   const input = readInputs();
   renderAverages();
-  if (!input.complete) {
+  if (!input.anyCount) {
     renderIncomplete();
     saveState();
     return;
@@ -358,19 +367,12 @@ function onCalc() {
   saveState();
 }
 
-// 3か月平均は回数6欄が揃えば、対象人数の有無に関係なく表示する
+// 3か月平均は、入力済みの欄だけで算出して表示する（全て空欄なら「―」）
 function renderAverages() {
-  const countIds = ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep'];
-  const allFilled = countIds.every(id => $(id).value.trim() !== '');
-  if (!allFilled) {
-    $('avg-new').textContent = '―';
-    $('avg-rep').textContent = '―';
-    return;
-  }
-  const avgNew = (Number($('m1-new').value || 0) + Number($('m2-new').value || 0) + Number($('m3-new').value || 0)) / 3;
-  const avgRep = (Number($('m1-rep').value || 0) + Number($('m2-rep').value || 0) + Number($('m3-rep').value || 0)) / 3;
-  $('avg-new').textContent = num1.format(avgNew);
-  $('avg-rep').textContent = num1.format(avgRep);
+  const anyNew = COUNT_NEW_IDS.some(id => $(id).value.trim() !== '');
+  const anyRep = COUNT_REP_IDS.some(id => $(id).value.trim() !== '');
+  $('avg-new').textContent = anyNew ? num1.format(avgOfFilled(COUNT_NEW_IDS)) : '―';
+  $('avg-rep').textContent = anyRep ? num1.format(avgOfFilled(COUNT_REP_IDS)) : '―';
 }
 
 // 必須項目が未入力のときの表示（結果を伏せて案内を出す）
@@ -388,10 +390,10 @@ function renderIncomplete() {
   $('r-staff-display').textContent = '―';
   $('r-tier-badge') && $('r-tier-badge').classList.add('hidden');
 
-  $('rev1-breakdown').innerHTML = '<tr><td class="px-3 py-2" colspan="4"><span class="text-slate-400">必須項目を入力すると表示されます</span></td></tr>';
-  $('rev2-breakdown').innerHTML = '<tr><td class="px-3 py-2" colspan="4"><span class="text-slate-400">必須項目を入力すると表示されます</span></td></tr>';
+  $('rev1-breakdown').innerHTML = '<tr><td class="px-3 py-2" colspan="4"><span class="text-slate-400">①の算定回数を入力すると表示されます</span></td></tr>';
+  $('rev2-breakdown').innerHTML = '<tr><td class="px-3 py-2" colspan="4"><span class="text-slate-400">①の算定回数を入力すると表示されます</span></td></tr>';
   $('rev2-tier-label').textContent = '';
-  $('allow-steps').innerHTML = '<li class="text-slate-400">必須項目を入力すると表示されます</li>';
+  $('allow-steps').innerHTML = '<li class="text-slate-400">①の算定回数を入力すると表示されます</li>';
 
   $('tier-table-wrap').innerHTML = `<div class="rounded-md bg-slate-50 p-4 text-center text-sm text-slate-500">
     ①の回数を入力すると、区分ごとの金額が表示されます。
@@ -402,7 +404,7 @@ function onReset() {
   selectedTierId = null;
   clearState();
   // すべての入力欄を空欄に戻す
-  REQUIRED_NUMBER_IDS.forEach(id => { const el = $(id); if (el) el.value = ''; });
+  [...COUNT_IDS, 'staff-count'].forEach(id => { const el = $(id); if (el) el.value = ''; });
   const rev1 = document.querySelector('input[name="rev-type"][value="1-only"]');
   const raise = document.querySelector('input[name="raise-type"][value="continuous"]');
   if (rev1) rev1.checked = true;
