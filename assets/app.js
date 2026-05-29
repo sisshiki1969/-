@@ -378,13 +378,83 @@ document.addEventListener('DOMContentLoaded', () => {
   // 印刷時は計算詳細を一時的に開く
   window.addEventListener('beforeprint', () => {
     const d = $('detail-disclosure');
-    if (d) { d.dataset.wasOpen = d.open ? '1' : '0'; d.open = true; }
+    if (d) { d.dataset.wasOpen = d.open ? '1' : '0'; d.style.height = ''; d.open = true; }
   });
   window.addEventListener('afterprint', () => {
     const d = $('detail-disclosure');
     if (d && d.dataset.wasOpen === '0') d.open = false;
   });
 
+  setupDetailsAnimation($('detail-disclosure'));
+
   loadState();
   onCalc();
 });
+
+// <details> の開閉を高さアニメーションさせる
+function setupDetailsAnimation(details) {
+  if (!details) return;
+  const summary = details.querySelector('summary');
+  const body = details.querySelector('.details-body');
+  if (!summary || !body) return;
+
+  const DURATION = 320;
+  const EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
+  let animation = null;
+  let isClosing = false;
+  let isExpanding = false;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  summary.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (reduceMotion.matches) { details.open = !details.open; return; }
+    details.style.overflow = 'hidden';
+    if (isClosing || !details.open) {
+      open();
+    } else if (isExpanding || details.open) {
+      shrink();
+    }
+  });
+
+  function open() {
+    details.style.height = `${details.offsetHeight}px`;
+    details.open = true;
+    window.requestAnimationFrame(expand);
+  }
+
+  function expand() {
+    isExpanding = true;
+    const start = `${details.offsetHeight}px`;
+    const end = `${summary.offsetHeight + body.offsetHeight}px`;
+    if (animation) animation.cancel();
+    animation = details.animate({ height: [start, end] }, { duration: DURATION, easing: EASING });
+    body.animate(
+      { opacity: [0, 1], transform: ['translateY(-8px)', 'translateY(0)'] },
+      { duration: DURATION, easing: EASING }
+    );
+    animation.onfinish = () => finish(true);
+    animation.oncancel = () => { isExpanding = false; };
+  }
+
+  function shrink() {
+    isClosing = true;
+    const start = `${details.offsetHeight}px`;
+    const end = `${summary.offsetHeight}px`;
+    if (animation) animation.cancel();
+    animation = details.animate({ height: [start, end] }, { duration: DURATION, easing: EASING });
+    body.animate(
+      { opacity: [1, 0], transform: ['translateY(0)', 'translateY(-8px)'] },
+      { duration: DURATION, easing: EASING }
+    );
+    animation.onfinish = () => finish(false);
+    animation.oncancel = () => { isClosing = false; };
+  }
+
+  function finish(isOpen) {
+    details.open = isOpen;
+    animation = null;
+    isClosing = isExpanding = false;
+    details.style.height = details.style.overflow = '';
+  }
+}
