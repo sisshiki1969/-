@@ -180,7 +180,7 @@ function renderTierTable(r) {
     const isSelected = r.useTier && r.useTier.id === t.id;
     const rowCls = isSelected
       ? 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'
-      : 'bg-white hover:bg-slate-50';
+      : 'bg-amber-50/40 hover:bg-amber-100';
     const yearly = t.monthly * 12;
 
     return `<tr data-tier-id="${t.id}" class="cursor-pointer ${rowCls} transition">
@@ -196,7 +196,7 @@ function renderTierTable(r) {
   }).join('');
 
   const clearRow = `
-    <tr data-tier-id="0" class="cursor-pointer transition ${r.useTier ? 'bg-white hover:bg-slate-50' : 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'}">
+    <tr data-tier-id="0" class="cursor-pointer transition ${r.useTier ? 'bg-amber-50/40 hover:bg-amber-100' : 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'}">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${!r.useTier ? '<span class="mr-1 text-brand-700">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
         (Ⅱ) を算定しない
