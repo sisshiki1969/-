@@ -94,7 +94,12 @@ function radioVal(name) {
   return el ? el.value : null;
 }
 
+const REQUIRED_NUMBER_IDS = ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep', 'staff-count'];
+
 function readInputs() {
+  const filled = REQUIRED_NUMBER_IDS.every(id => $(id).value.trim() !== '');
+  const staffCount = Number($('staff-count').value);
+  const complete = filled && Number.isFinite(staffCount) && staffCount >= 1;
   return {
     m1New: Math.max(0, Number($('m1-new').value || 0)),
     m1Rep: Math.max(0, Number($('m1-rep').value || 0)),
@@ -104,7 +109,8 @@ function readInputs() {
     m3Rep: Math.max(0, Number($('m3-rep').value || 0)),
     revType:   radioVal('rev-type')   || '1-only',
     raiseType: radioVal('raise-type') || 'standard',
-    staffCount:  Math.max(1, Number($('staff-count').value || 1)),
+    staffCount: Math.max(1, Number($('staff-count').value || 1)),
+    complete,
   };
 }
 
@@ -241,6 +247,9 @@ function buildFormula(pt1, pt2, tierKey) {
 }
 
 function render(r) {
+  // 入力待ち案内を隠す
+  $('result-notice').classList.add('hidden');
+
   // 3か月平均
   $('avg-new').textContent = num1.format(r.avgNew);
   $('avg-rep').textContent = num1.format(r.avgRep);
@@ -338,16 +347,54 @@ function render(r) {
 
 function onCalc() {
   const input = readInputs();
+  if (!input.complete) {
+    renderIncomplete();
+    saveState();
+    return;
+  }
   const result = calculate(input);
   render(result);
   saveState();
 }
 
+// 必須項目が未入力のときの表示（結果を伏せて案内を出す）
+function renderIncomplete() {
+  $('result-notice').classList.remove('hidden');
+
+  $('avg-new').textContent = '―';
+  $('avg-rep').textContent = '―';
+
+  $('r-formula-new').innerHTML = '―';
+  $('r-formula-rep').innerHTML = '―';
+  $('r-formula-new').classList.add('text-slate-400');
+  $('r-formula-rep').classList.add('text-slate-400');
+
+  ['r-rev1-monthly', 'r-rev2-monthly', 'r-total-monthly', 'r-total-yearly',
+   'r-allow-base', 'r-welfare', 'r-allowance', 'r-allowance-yearly',
+   'r-allowance-per', 'r-allowance-per-yearly'].forEach(id => { $(id).textContent = '― 円'; });
+  $('r-staff-display').textContent = '―';
+  $('r-tier-badge') && $('r-tier-badge').classList.add('hidden');
+
+  $('rev1-breakdown').innerHTML = '<tr><td class="px-3 py-2" colspan="4"><span class="text-slate-400">必須項目を入力すると表示されます</span></td></tr>';
+  $('rev2-breakdown').innerHTML = '<tr><td class="px-3 py-2" colspan="4"><span class="text-slate-400">必須項目を入力すると表示されます</span></td></tr>';
+  $('rev2-tier-label').textContent = '';
+  $('allow-steps').innerHTML = '<li class="text-slate-400">必須項目を入力すると表示されます</li>';
+
+  $('tier-table-wrap').innerHTML = `<div class="rounded-md bg-slate-50 p-4 text-center text-sm text-slate-500">
+    ①の回数を入力すると、区分ごとの金額が表示されます。
+  </div>`;
+}
+
 function onReset() {
   selectedTierId = null;
   clearState();
-  // type="reset" でフォームがデフォルト値に戻るのを待ってから再計算
-  setTimeout(() => onCalc(), 0);
+  // すべての入力欄を空欄に戻す
+  REQUIRED_NUMBER_IDS.forEach(id => { const el = $(id); if (el) el.value = ''; });
+  const rev1 = document.querySelector('input[name="rev-type"][value="1-only"]');
+  const raise = document.querySelector('input[name="raise-type"][value="standard"]');
+  if (rev1) rev1.checked = true;
+  if (raise) raise.checked = true;
+  onCalc();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
