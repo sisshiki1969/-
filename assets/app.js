@@ -108,7 +108,7 @@ function readInputs() {
     m3New: Math.max(0, Number($('m3-new').value || 0)),
     m3Rep: Math.max(0, Number($('m3-rep').value || 0)),
     revType:   radioVal('rev-type')   || '1-only',
-    raiseType: radioVal('raise-type') || 'standard',
+    raiseType: radioVal('raise-type') || 'continuous',
     staffCount: Math.max(1, Number($('staff-count').value || 1)),
     complete,
   };
@@ -391,7 +391,7 @@ function onReset() {
   // すべての入力欄を空欄に戻す
   REQUIRED_NUMBER_IDS.forEach(id => { const el = $(id); if (el) el.value = ''; });
   const rev1 = document.querySelector('input[name="rev-type"][value="1-only"]');
-  const raise = document.querySelector('input[name="raise-type"][value="standard"]');
+  const raise = document.querySelector('input[name="raise-type"][value="continuous"]');
   if (rev1) rev1.checked = true;
   if (raise) raise.checked = true;
   onCalc();
