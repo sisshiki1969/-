@@ -303,45 +303,48 @@ function renderPriorTierTable(r) {
     return;
   }
 
+  const priorPt1 = r.priorPt1; // 改定前(Ⅰ) = {new:6, rep:2}
+  const priorRev1M = r.priorRev1Monthly; // 改定前(Ⅰ)月額
+
   const rows = r.priorTierEvals.map(t => {
     const isSelected = r.priorUseTier && r.priorUseTier.id === t.id;
     const rowCls = isSelected
       ? 'prior-tier-row-selected bg-amber-100 ring-2 ring-amber-500'
       : 'bg-amber-50/40 hover:bg-amber-100';
-    const yearly = t.monthly * 12;
+    const totalNew = priorPt1.new + t.new;
+    const totalRep = priorPt1.rep + t.rep;
+    const totalMonthly = priorRev1M + t.monthly; // (Ⅰ)+(Ⅱ)月額
     return `<tr data-prior-tier-id="${t.id}" class="cursor-pointer ${rowCls} transition">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${isSelected ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
         ${t.key}
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${t.new}点</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${t.rep}点</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(t.monthly))}</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-500">${num.format(Math.round(yearly))}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${totalNew}点</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${totalRep}点</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(totalMonthly))}</td>
     </tr>`;
   }).join('');
 
+  // 「改定前は(Ⅱ)を算定していない」＝(Ⅰ)のみ控除
   const clearRow = `
     <tr data-prior-tier-id="0" class="cursor-pointer transition ${r.priorUseTier ? 'bg-amber-50/40 hover:bg-amber-100' : 'prior-tier-row-selected bg-amber-100 ring-2 ring-amber-500'}">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${!r.priorUseTier ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
-        改定前は(Ⅱ)を算定していない
+        改定前は(Ⅱ)を算定していない（(Ⅰ)のみ）
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">0</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">0</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${priorPt1.new}点</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${priorPt1.rep}点</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(priorRev1M))}</td>
     </tr>`;
 
   wrap.innerHTML = `
-    <table class="w-full min-w-[600px] border-separate border-spacing-0 text-sm">
+    <table class="w-full min-w-[520px] border-separate border-spacing-0 text-sm">
       <thead>
         <tr class="text-xs text-slate-500">
           <th class="rounded-tl-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">改定前(Ⅱ)区分</th>
-          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診点数</th>
-          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診点数</th>
-          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">控除月額(円)</th>
-          <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">控除年額(円)</th>
+          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診点数<span class="ml-0.5 text-[10px] text-slate-400">(Ⅰ+Ⅱ)</span></th>
+          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診点数<span class="ml-0.5 text-[10px] text-slate-400">(Ⅰ+Ⅱ)</span></th>
+          <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">改定前の(Ⅰ)(Ⅱ)月額(円)</th>
         </tr>
       </thead>
       <tbody>${clearRow}${rows}</tbody>
