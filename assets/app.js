@@ -376,11 +376,23 @@ function render(r) {
   // 3か月平均（入力済みの欄のみ・空欄種別は「―」）
   renderAverages();
 
-  // 適用点数（式形式）
+  // 令和8年6月以降の点数（式形式）
   $('r-formula-new').innerHTML = buildFormula(r.pt1.new, r.useTier ? r.useTier.new : null, r.useTier ? r.useTier.key : null);
   $('r-formula-rep').innerHTML = buildFormula(r.pt1.rep, r.useTier ? r.useTier.rep : null, r.useTier ? r.useTier.key : null);
   $('r-formula-new').classList.remove('text-slate-400');
   $('r-formula-rep').classList.remove('text-slate-400');
+
+  // 令和8年5月までの点数（継続的賃上げ実施の場合のみ）
+  const priorBlock = $('prior-formula-block');
+  if (r.isContinuous) {
+    priorBlock.classList.remove('hidden');
+    $('r-formula-prior-new').innerHTML = buildFormula(r.priorPt1.new, r.priorUseTier ? r.priorUseTier.new : null, r.priorUseTier ? r.priorUseTier.key : null);
+    $('r-formula-prior-rep').innerHTML = buildFormula(r.priorPt1.rep, r.priorUseTier ? r.priorUseTier.rep : null, r.priorUseTier ? r.priorUseTier.key : null);
+    $('r-formula-prior-new').classList.remove('text-slate-400');
+    $('r-formula-prior-rep').classList.remove('text-slate-400');
+  } else {
+    priorBlock.classList.add('hidden');
+  }
 
   // 増収額
   $('r-rev1-monthly').textContent = yen.format(Math.round(r.rev1Monthly));
@@ -526,6 +538,9 @@ function renderIncomplete() {
   $('r-formula-rep').innerHTML = '―';
   $('r-formula-new').classList.add('text-slate-400');
   $('r-formula-rep').classList.add('text-slate-400');
+  const priorBlock = $('prior-formula-block');
+  if (priorBlock) priorBlock.classList.add('hidden');
+  ['r-formula-prior-new', 'r-formula-prior-rep'].forEach(id => { const el = $(id); if (el) { el.innerHTML = '―'; el.classList.add('text-slate-400'); } });
 
   ['r-rev1-monthly', 'r-rev2-monthly', 'r-gross-monthly', 'r-prior-monthly',
    'r-total-monthly', 'r-total-yearly',
