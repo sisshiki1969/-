@@ -264,11 +264,23 @@
         </div>
       </section>
 
+      <!-- 改定前(II) 区分選択（継続的賃上げ実施の場合のみ） -->
+      <section id="prior-tier-selector" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
+        <div class="flex items-center gap-3">
+          <span class="grid h-7 w-7 place-content-center rounded-full bg-amber-500 text-xs font-bold text-white">2.5</span>
+          <h2 class="text-base font-semibold text-slate-900">改定前（令和8年3月時点）の評価料(Ⅱ) 区分</h2>
+        </div>
+        <p class="no-print mt-2 text-xs text-slate-500">
+          「継続的賃上げ実施」を選んだ場合のみ表示されます。<span class="font-medium text-amber-700">既に算定していた区分</span>を選ぶと、改定後の増収額から自動的に差し引いて<span class="font-medium">純増分</span>を算出します。
+        </p>
+        <div id="prior-tier-table-wrap" class="mt-4 overflow-x-auto"><!-- JSで生成 --></div>
+      </section>
+
       <!-- (II) 区分選択テーブル -->
       <section id="tier-selector" class="rounded-xl border border-slate-200 bg-white p-5 shadow-card sm:p-6">
         <div class="flex items-center gap-3">
           <span class="grid h-7 w-7 place-content-center rounded-full bg-brand-700 text-xs font-bold text-white">3</span>
-          <h2 class="text-base font-semibold text-slate-900">評価料(Ⅱ) の区分を選ぶ</h2>
+          <h2 class="text-base font-semibold text-slate-900">改定後（令和8年6月～）の評価料(Ⅱ) の区分を選ぶ</h2>
         </div>
         <p class="no-print mt-2 text-xs text-slate-500">②で「(Ⅰ)+(Ⅱ)を算定」を選んだ場合のみ。表の行をクリックして区分を選んでください。</p>
         <div id="tier-table-wrap" class="mt-4 overflow-x-auto">
@@ -346,10 +358,18 @@
             <span class="text-slate-500">評価料(Ⅱ) 増収（月額）</span>
             <span id="r-rev2-monthly" class="font-mono text-base font-semibold tabular-nums text-slate-900">― 円</span>
           </div>
+          <div id="row-gross" class="hidden items-baseline justify-between border-t border-slate-100 pt-2 text-slate-700 flex">
+            <span>改定後 (Ⅰ)＋(Ⅱ) 月額（小計）</span>
+            <span id="r-gross-monthly" class="font-mono text-base font-semibold tabular-nums text-slate-900">― 円</span>
+          </div>
+          <div id="row-prior" class="hidden items-baseline justify-between text-rose-700 flex">
+            <span>－ 改定前 (Ⅰ)＋(Ⅱ) 月額（控除）</span>
+            <span id="r-prior-monthly" class="font-mono text-base font-semibold tabular-nums">― 円</span>
+          </div>
         </div>
 
         <div class="mt-4 rounded-lg bg-brand-700 p-4 text-white">
-          <div class="text-[11px] font-medium text-brand-100">月間想定増収額（合計）</div>
+          <div id="r-total-label" class="text-[11px] font-medium text-brand-100">月間想定増収額（合計）</div>
           <div id="r-total-monthly" class="mt-0.5 font-mono text-2xl font-bold tabular-nums">― 円</div>
           <div class="mt-1 text-[11px] text-brand-100">年額換算：<span id="r-total-yearly" class="font-mono tabular-nums">―</span></div>
         </div>

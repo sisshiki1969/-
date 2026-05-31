@@ -10,6 +10,21 @@ const REV1_POINTS_TABLE = {
   continuous: { new: 23, rep: 6 },
 };
 
+// 令和6年度改定の評価料(Ⅰ) 点数（改定前＝令和8年5月以前）
+const REV1_POINTS_PRIOR = { new: 6, rep: 2 };
+
+// 令和6年度改定の評価料(Ⅱ) 区分表（無床診療所、8区分）
+const REV2_TIERS_PRIOR = [
+  { id: 1, key: '区分1', new: 2,  rep: 1 },
+  { id: 2, key: '区分2', new: 4,  rep: 1 },
+  { id: 3, key: '区分3', new: 6,  rep: 2 },
+  { id: 4, key: '区分4', new: 8,  rep: 2 },
+  { id: 5, key: '区分5', new: 10, rep: 3 },
+  { id: 6, key: '区分6', new: 12, rep: 3 },
+  { id: 7, key: '区分7', new: 14, rep: 4 },
+  { id: 8, key: '区分8', new: 16, rep: 4 },
+];
+
 // 評価料(Ⅱ) 区分表（無床診療所）
 const REV2_TIERS = {
   standard: [
@@ -44,6 +59,8 @@ const num1 = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1 });
 
 // 状態：手動選択された(Ⅱ)区分ID（nullなら未選択＝(Ⅱ)算定しない）
 let selectedTierId = null;
+// 改定前(Ⅱ)区分ID（継続的賃上げ実施の場合に控除する旧区分。nullなら旧(Ⅱ)未算定）
+let selectedPriorTierId = null;
 
 const STORAGE_KEY = 'baseup-simulator-v1';
 
@@ -51,7 +68,7 @@ const PERSIST_NUMBER_IDS = ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm
 const PERSIST_RADIO_NAMES = ['rev-type', 'raise-type'];
 
 function saveState() {
-  const data = { nums: {}, radios: {}, tierId: selectedTierId };
+  const data = { nums: {}, radios: {}, tierId: selectedTierId, priorTierId: selectedPriorTierId };
   PERSIST_NUMBER_IDS.forEach(id => {
     const el = document.getElementById(id);
     if (el) data.nums[id] = el.value;
@@ -81,6 +98,9 @@ function loadState() {
   }
   if (typeof data.tierId === 'number') {
     selectedTierId = data.tierId;
+  }
+  if (typeof data.priorTierId === 'number') {
+    selectedPriorTierId = data.priorTierId;
   }
 }
 
@@ -135,30 +155,48 @@ function getRev2Tiers(input) {
 function calculate(input) {
   const avgNew = input.avgNew;
   const avgRep = input.avgRep;
+  const isContinuous = input.raiseType === 'continuous';
 
-  // (Ⅰ) 月額
+  // 改定後(Ⅰ) 月額
   const pt1 = getRev1Points(input);
   const rev1NewMonthly = avgNew * pt1.new * POINT_YEN;
   const rev1RepMonthly = avgRep * pt1.rep * POINT_YEN;
   const rev1Monthly = rev1NewMonthly + rev1RepMonthly;
 
-  // (Ⅱ) 各区分の試算
+  // 改定後(Ⅱ) 各区分の試算
   const tiers = getRev2Tiers(input);
   const tierEvals = tiers.map(t => {
     const monthly = (avgNew * t.new + avgRep * t.rep) * POINT_YEN;
     return { ...t, monthly };
   });
-
-  // ユーザー選択した区分（(Ⅰ)+(Ⅱ)選択時のみ有効）
   let useTier = null;
   if (input.revType === '1-and-2' && selectedTierId !== null) {
     useTier = tierEvals.find(t => t.id === selectedTierId) || null;
   }
-
   const rev2Monthly = useTier ? useTier.monthly : 0;
 
-  // 合計
-  const totalMonthly = rev1Monthly + rev2Monthly;
+  // 改定後の総額
+  const grossMonthly = rev1Monthly + rev2Monthly;
+
+  // 改定前(令和8年3月時点)の(Ⅰ)(Ⅱ)月額（継続的賃上げ実施の場合のみ控除）
+  const priorPt1 = REV1_POINTS_PRIOR;
+  const priorRev1Monthly = isContinuous
+    ? (avgNew * priorPt1.new + avgRep * priorPt1.rep) * POINT_YEN
+    : 0;
+
+  const priorTierEvals = REV2_TIERS_PRIOR.map(t => {
+    const monthly = (avgNew * t.new + avgRep * t.rep) * POINT_YEN;
+    return { ...t, monthly };
+  });
+  let priorUseTier = null;
+  if (isContinuous && input.revType === '1-and-2' && selectedPriorTierId !== null) {
+    priorUseTier = priorTierEvals.find(t => t.id === selectedPriorTierId) || null;
+  }
+  const priorRev2Monthly = priorUseTier ? priorUseTier.monthly : 0;
+  const priorTotalMonthly = priorRev1Monthly + priorRev2Monthly;
+
+  // 純増分 = 改定後 − 改定前
+  const totalMonthly = grossMonthly - priorTotalMonthly;
   const totalYearly  = totalMonthly * 12;
 
   // 手当原資（社保事業主負担増を控除）
@@ -172,6 +210,12 @@ function calculate(input) {
     pt1, tiers, tierEvals, useTier,
     rev1NewMonthly, rev1RepMonthly, rev1Monthly,
     rev2Monthly,
+    // 改定前関連
+    isContinuous,
+    priorPt1, priorTierEvals, priorUseTier,
+    priorRev1Monthly, priorRev2Monthly, priorTotalMonthly,
+    grossMonthly,
+    // 純増
     totalMonthly, totalYearly,
     welfareCost, allowanceMonthly, allowancePerStaff,
   };
@@ -246,6 +290,72 @@ function renderTierTable(r) {
   });
 }
 
+function renderPriorTierTable(r) {
+  const wrap = $('prior-tier-table-wrap');
+  const section = $('prior-tier-selector');
+  const show = r.isContinuous && r.input.revType === '1-and-2';
+
+  // 表示制御（非該当時は丸ごと非表示、印刷も除外）
+  section.classList.toggle('hidden', !show);
+  section.classList.toggle('no-print', !show);
+  if (!show) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const rows = r.priorTierEvals.map(t => {
+    const isSelected = r.priorUseTier && r.priorUseTier.id === t.id;
+    const rowCls = isSelected
+      ? 'prior-tier-row-selected bg-amber-100 ring-2 ring-amber-500'
+      : 'bg-amber-50/40 hover:bg-amber-100';
+    const yearly = t.monthly * 12;
+    return `<tr data-prior-tier-id="${t.id}" class="cursor-pointer ${rowCls} transition">
+      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
+        ${isSelected ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
+        ${t.key}
+      </td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${t.new}点</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${t.rep}点</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(t.monthly))}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-500">${num.format(Math.round(yearly))}</td>
+    </tr>`;
+  }).join('');
+
+  const clearRow = `
+    <tr data-prior-tier-id="0" class="cursor-pointer transition ${r.priorUseTier ? 'bg-amber-50/40 hover:bg-amber-100' : 'prior-tier-row-selected bg-amber-100 ring-2 ring-amber-500'}">
+      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
+        ${!r.priorUseTier ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
+        改定前は(Ⅱ)を算定していない
+      </td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">0</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">0</td>
+    </tr>`;
+
+  wrap.innerHTML = `
+    <table class="w-full min-w-[600px] border-separate border-spacing-0 text-sm">
+      <thead>
+        <tr class="text-xs text-slate-500">
+          <th class="rounded-tl-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">改定前(Ⅱ)区分</th>
+          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診点数</th>
+          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診点数</th>
+          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">控除月額(円)</th>
+          <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">控除年額(円)</th>
+        </tr>
+      </thead>
+      <tbody>${clearRow}${rows}</tbody>
+    </table>`;
+
+  wrap.querySelectorAll('tr[data-prior-tier-id]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const id = Number(tr.dataset.priorTierId);
+      selectedPriorTierId = id === 0 ? null : id;
+      onCalc();
+    });
+  });
+}
+
 function buildFormula(pt1, pt2, tierKey) {
   const pt1Span = `<span class="text-base font-bold text-slate-900">${pt1}</span><span class="text-xs text-slate-500">点（Ⅰ）</span>`;
   if (pt2 == null) {
@@ -272,12 +382,27 @@ function render(r) {
   // 増収額
   $('r-rev1-monthly').textContent = yen.format(Math.round(r.rev1Monthly));
   $('r-rev2-monthly').textContent = yen.format(Math.round(r.rev2Monthly));
+  $('r-gross-monthly').textContent = yen.format(Math.round(r.grossMonthly));
   $('r-total-monthly').textContent = yen.format(Math.round(r.totalMonthly));
   $('r-total-yearly').textContent  = yen.format(Math.round(r.totalYearly));
 
   const row2 = $('row-rev2-monthly');
   if (r.input.revType === '1-and-2') row2.classList.remove('opacity-40');
   else row2.classList.add('opacity-40');
+
+  // 改定前控除行・小計行（継続的賃上げ実施の場合のみ表示）
+  const rowPrior = $('row-prior');
+  const rowGross = $('row-gross');
+  if (r.isContinuous) {
+    rowGross.classList.remove('hidden');
+    rowPrior.classList.remove('hidden');
+    $('r-prior-monthly').textContent = '− ' + yen.format(Math.round(r.priorTotalMonthly));
+    $('r-total-label').textContent = '月間想定増収額（純増分・改定前控除後）';
+  } else {
+    rowGross.classList.add('hidden');
+    rowPrior.classList.add('hidden');
+    $('r-total-label').textContent = '月間想定増収額（合計）';
+  }
 
   // 手当額
   $('r-allow-base').textContent  = yen.format(Math.round(r.totalMonthly));
@@ -348,12 +473,17 @@ function render(r) {
   const perStaffStep = r.input.hasStaff
     ? `1人あたりベースアップ額（月額）：${num.format(Math.round(r.allowanceMonthly))} ÷ ${r.input.staffCount} 人 ＝ <span class="font-mono font-semibold text-emerald-700">${num.format(Math.round(r.allowancePerStaff))} 円/月</span>`
     : `1人あたりベースアップ額（月額）：<span class="text-slate-400">ベースアップ対象従業員数を入力すると表示されます</span>`;
-  const steps = [
-    `月間想定増収額 (Ⅰ+Ⅱ)：<span class="font-mono">${num.format(Math.round(r.totalMonthly))} 円</span>`,
-    `事業主負担の社会保険料増（16.5%）：<span class="font-mono">${num.format(Math.round(r.welfareCost))} 円</span>`,
-    `手当原資（月額）：${num.format(Math.round(r.totalMonthly))} ÷ 1.165 ＝ <span class="font-mono font-semibold text-emerald-700">${num.format(Math.round(r.allowanceMonthly))} 円</span>`,
-    perStaffStep,
-  ];
+  const steps = [];
+  if (r.isContinuous) {
+    steps.push(`改定後 (Ⅰ)＋(Ⅱ) 月額：<span class="font-mono">${num.format(Math.round(r.grossMonthly))} 円</span>`);
+    steps.push(`改定前 (Ⅰ)＋(Ⅱ) 月額（控除）：<span class="font-mono text-rose-700">− ${num.format(Math.round(r.priorTotalMonthly))} 円</span>`);
+    steps.push(`月間想定増収額（純増分）：<span class="font-mono font-semibold">${num.format(Math.round(r.totalMonthly))} 円</span>`);
+  } else {
+    steps.push(`月間想定増収額 (Ⅰ+Ⅱ)：<span class="font-mono font-semibold">${num.format(Math.round(r.totalMonthly))} 円</span>`);
+  }
+  steps.push(`事業主負担の社会保険料増（16.5%）：<span class="font-mono">${num.format(Math.round(r.welfareCost))} 円</span>`);
+  steps.push(`手当原資（月額）：${num.format(Math.round(r.totalMonthly))} ÷ 1.165 ＝ <span class="font-mono font-semibold text-emerald-700">${num.format(Math.round(r.allowanceMonthly))} 円</span>`);
+  steps.push(perStaffStep);
   $('allow-steps').innerHTML = steps.map((s, i) => `
     <li class="flex gap-2">
       <span class="mt-0.5 grid h-5 w-5 flex-none place-content-center rounded-full bg-brand-100 text-[10px] font-semibold text-brand-800">${i + 1}</span>
@@ -361,6 +491,7 @@ function render(r) {
     </li>`).join('');
 
   renderTierTable(r);
+  renderPriorTierTable(r);
 }
 
 function onCalc() {
@@ -393,7 +524,8 @@ function renderIncomplete() {
   $('r-formula-new').classList.add('text-slate-400');
   $('r-formula-rep').classList.add('text-slate-400');
 
-  ['r-rev1-monthly', 'r-rev2-monthly', 'r-total-monthly', 'r-total-yearly',
+  ['r-rev1-monthly', 'r-rev2-monthly', 'r-gross-monthly', 'r-prior-monthly',
+   'r-total-monthly', 'r-total-yearly',
    'r-allow-base', 'r-welfare', 'r-allowance', 'r-allowance-yearly',
    'r-allowance-per', 'r-allowance-per-yearly'].forEach(id => { $(id).textContent = '― 円'; });
   $('r-staff-display').textContent = '―';
@@ -407,10 +539,16 @@ function renderIncomplete() {
   $('tier-table-wrap').innerHTML = `<div class="rounded-md bg-slate-50 p-4 text-center text-sm text-slate-500">
     ①の回数を入力すると、区分ごとの金額が表示されます。
   </div>`;
+
+  // 改定前セクションも非表示
+  const ps = $('prior-tier-selector');
+  if (ps) { ps.classList.add('hidden', 'no-print'); }
+  $('prior-tier-table-wrap').innerHTML = '';
 }
 
 function onReset() {
   selectedTierId = null;
+  selectedPriorTierId = null;
   clearState();
   // すべての入力欄を空欄に戻す
   [...COUNT_IDS, 'staff-count'].forEach(id => { const el = $(id); if (el) el.value = ''; });
@@ -436,7 +574,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ラジオ変更時は手動選択をクリアして再計算
   document.querySelectorAll('input[name="rev-type"], input[name="raise-type"]')
-    .forEach(el => el.addEventListener('change', () => { selectedTierId = null; onCalc(); }));
+    .forEach(el => el.addEventListener('change', () => {
+      selectedTierId = null;
+      selectedPriorTierId = null;
+      onCalc();
+    }));
 
   // Enterで再計算
   $('sim-form').addEventListener('keydown', (e) => {
