@@ -241,7 +241,6 @@ function renderTierTable(r) {
     const rowCls = isSelected
       ? 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'
       : 'bg-amber-50/40 hover:bg-amber-100';
-    const yearly = t.monthly * 12;
 
     return `<tr data-tier-id="${t.id}" class="cursor-pointer ${rowCls} transition">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
@@ -251,7 +250,6 @@ function renderTierTable(r) {
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${t.new}点</td>
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${t.rep}点</td>
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(t.monthly))}</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-500">${num.format(Math.round(yearly))}</td>
     </tr>`;
   }).join('');
 
@@ -264,18 +262,16 @@ function renderTierTable(r) {
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">0</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">0</td>
     </tr>`;
 
   wrap.innerHTML = `
-    <table class="w-full min-w-[600px] border-separate border-spacing-0 text-sm">
+    <table class="w-full min-w-[520px] border-separate border-spacing-0 text-sm">
       <thead>
         <tr class="text-xs text-slate-500">
           <th class="rounded-tl-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">区分</th>
           <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診点数</th>
           <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診点数</th>
-          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">(Ⅱ)月額(円)</th>
-          <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">(Ⅱ)年額(円)</th>
+          <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">(Ⅱ)月額(円)</th>
         </tr>
       </thead>
       <tbody>${clearRow}${rows}</tbody>
