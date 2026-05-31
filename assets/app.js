@@ -385,13 +385,13 @@ function render(r) {
   // 令和8年5月までの点数（継続的賃上げ実施の場合のみ）
   const priorBlock = $('prior-formula-block');
   if (r.isContinuous) {
-    priorBlock.classList.remove('hidden', 'no-print');
+    priorBlock.classList.remove('hidden');
     $('r-formula-prior-new').innerHTML = buildFormula(r.priorPt1.new, r.priorUseTier ? r.priorUseTier.new : null, r.priorUseTier ? r.priorUseTier.key : null);
     $('r-formula-prior-rep').innerHTML = buildFormula(r.priorPt1.rep, r.priorUseTier ? r.priorUseTier.rep : null, r.priorUseTier ? r.priorUseTier.key : null);
     $('r-formula-prior-new').classList.remove('text-slate-400');
     $('r-formula-prior-rep').classList.remove('text-slate-400');
   } else {
-    priorBlock.classList.add('hidden', 'no-print');
+    priorBlock.classList.add('hidden');
   }
 
   // 増収額
