@@ -312,8 +312,8 @@ function renderPriorTierTable(r) {
   const fmtAlone = (a) => `<span class="text-slate-500">(Ⅰ)</span><span class="font-semibold">${a}点</span>`;
 
   const usingTier = !!r.priorUseTier;
-  const wasOpen = wrap.dataset.tierOpen === '1';
-  const open = wasOpen || usingTier; // 区分が選ばれていれば自動で開く
+  // 開閉状態は明示操作で決まる（区分選択時は自動で閉じる）
+  const open = wrap.dataset.tierOpen === '1';
 
   // 改定前(Ⅰ)行（参考表示・選択不可）
   const row1 = `
@@ -334,7 +334,6 @@ function renderPriorTierTable(r) {
   const row2 = `
     <tr data-prior-summary="ii" class="cursor-pointer ${usingTier ? 'bg-amber-100 ring-2 ring-amber-500' : 'bg-amber-50/40 hover:bg-amber-100'} transition">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
-        ${usingTier ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
         改定前(Ⅱ) ${tierLabel}
         <span class="ml-1 inline-flex items-center gap-0.5 text-[11px] text-amber-700">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform ${open ? 'rotate-180' : ''}"><path d="m6 9 6 6 6-6"/></svg>
@@ -418,12 +417,12 @@ function renderPriorTierTable(r) {
     });
   });
 
-  // クリックハンドラ：区分行
+  // クリックハンドラ：区分行（選択後は自動で閉じる）
   wrap.querySelectorAll('tr[data-prior-tier-id]').forEach(tr => {
     tr.addEventListener('click', () => {
       const id = Number(tr.dataset.priorTierId);
       selectedPriorTierId = id === 0 ? null : id;
-      wrap.dataset.tierOpen = '1';
+      wrap.dataset.tierOpen = '0';
       onCalc();
     });
   });
