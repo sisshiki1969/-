@@ -243,51 +243,118 @@ function renderTierTable(r) {
   }
 
   const pt1 = r.pt1; // 改定後(Ⅰ)
-  const fmtSum = (a, b) => `<span class="text-slate-500">(Ⅰ)${a}+(Ⅱ)${b}=</span><span class="font-semibold">${a + b}点</span>`;
-  const fmtAlone = (a) => `<span class="text-slate-500">(Ⅰ)</span><span class="font-semibold">${a}点</span>`;
+  const usingTier = !!r.useTier;
+  // 開閉状態は明示操作で決まる（区分選択時は自動で閉じる）
+  const open = wrap.dataset.tierOpen === '1';
 
-  const rows = r.tierEvals.map(t => {
+  // 改定後(Ⅰ)行（参考表示・選択不可）
+  const row1 = `
+    <tr class="bg-white">
+      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">改定後(Ⅰ)</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-semibold">${pt1.new}点</span></td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-semibold">${pt1.rep}点</span></td>
+    </tr>`;
+
+  // 改定後(Ⅱ) 行：クリックでアコーディオン開閉
+  const tierLabel = usingTier ? `（${r.useTier.key}）` : '<span class="text-slate-500">未選択</span>';
+  const val2New = usingTier
+    ? `<span class="font-semibold">${r.useTier.new}点</span>`
+    : '<span class="text-slate-400">―</span>';
+  const val2Rep = usingTier
+    ? `<span class="font-semibold">${r.useTier.rep}点</span>`
+    : '<span class="text-slate-400">―</span>';
+  const row2 = `
+    <tr data-tier-summary="ii" class="cursor-pointer ${usingTier ? 'bg-brand-100 ring-2 ring-brand-600' : 'bg-amber-50/40 hover:bg-amber-100'} transition">
+      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
+        改定後(Ⅱ) ${tierLabel}
+        <span class="ml-1 inline-flex items-center gap-0.5 text-[11px] text-brand-700">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform ${open ? 'rotate-180' : ''}"><path d="m6 9 6 6 6-6"/></svg>
+          ${open ? '区分を閉じる' : '区分を選ぶ'}
+        </span>
+      </td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${val2New}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${val2Rep}</td>
+    </tr>`;
+
+  // 改定後(Ⅰ)+(Ⅱ) 行：合計表示のみ
+  const totalNew = pt1.new + (usingTier ? r.useTier.new : 0);
+  const totalRep = pt1.rep + (usingTier ? r.useTier.rep : 0);
+  const row3 = `
+    <tr class="bg-slate-50/60">
+      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">改定後(Ⅰ)+(Ⅱ) <span class="text-xs text-slate-500">合計</span></td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-bold text-brand-700">${totalNew}点</span></td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-bold text-brand-700">${totalRep}点</span></td>
+    </tr>`;
+
+  // ----- 区分テーブル（アコーディオン内）-----
+  const tierRows = r.tierEvals.map(t => {
     const isSelected = r.useTier && r.useTier.id === t.id;
     const rowCls = isSelected
       ? 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'
       : 'bg-amber-50/40 hover:bg-amber-100';
-
     return `<tr data-tier-id="${t.id}" class="cursor-pointer ${rowCls} transition">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${isSelected ? '<span class="mr-1 text-brand-700">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
         ${t.key}
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtSum(pt1.new, t.new)}</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtSum(pt1.rep, t.rep)}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-semibold">${t.new}点</span></td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-semibold">${t.rep}点</span></td>
     </tr>`;
   }).join('');
 
-  const clearRow = `
-    <tr data-tier-id="0" class="cursor-pointer transition ${r.useTier ? 'bg-amber-50/40 hover:bg-amber-100' : 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'}">
+  // 「算定しない」行
+  const tierNoneRow = `
+    <tr data-tier-id="0" class="cursor-pointer ${usingTier ? 'bg-white hover:bg-amber-50' : 'bg-brand-100 ring-2 ring-brand-600'} transition">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
-        ${!r.useTier ? '<span class="mr-1 text-brand-700">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
-        (Ⅱ) を算定しない（(Ⅰ)のみ）
+        ${!usingTier ? '<span class="mr-1 text-brand-700">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
+        (Ⅱ)を算定しない（(Ⅰ)のみ）
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtAlone(pt1.new)}</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtAlone(pt1.rep)}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
     </tr>`;
 
   wrap.innerHTML = `
     <table class="w-full min-w-[420px] border-separate border-spacing-0 text-sm">
       <thead>
         <tr class="text-xs text-slate-500">
-          <th class="rounded-tl-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">区分</th>
-          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診点数<span class="ml-0.5 text-[10px] text-slate-400">(Ⅰ+Ⅱ)</span></th>
-          <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診点数<span class="ml-0.5 text-[10px] text-slate-400">(Ⅰ+Ⅱ)</span></th>
+          <th class="rounded-tl-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">改定後の算定パターン</th>
+          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診点数</th>
+          <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診点数</th>
         </tr>
       </thead>
-      <tbody>${clearRow}${rows}</tbody>
-    </table>`;
+      <tbody>${row1}${row2}${row3}</tbody>
+    </table>
+    <div id="tier-accordion" class="${open ? '' : 'hidden'} mt-3 overflow-hidden rounded-lg border border-brand-300 bg-brand-50/30">
+      <div class="border-b border-brand-200 bg-brand-100/60 px-3 py-1.5 text-[11px] font-medium text-brand-900">改定後に算定する(Ⅱ)区分を選択してください</div>
+      <table class="w-full min-w-[420px] border-separate border-spacing-0 text-sm">
+        <thead>
+          <tr class="text-xs text-slate-500">
+            <th class="border-b border-slate-200 bg-white px-3 py-2 text-left font-medium">区分</th>
+            <th class="border-b border-l border-slate-200 bg-white px-3 py-2 text-right font-medium">初診点数</th>
+            <th class="border-b border-l border-slate-200 bg-white px-3 py-2 text-right font-medium">再診点数</th>
+          </tr>
+        </thead>
+        <tbody>${tierNoneRow}${tierRows}</tbody>
+      </table>
+    </div>`;
 
+  wrap.dataset.tierOpen = open ? '1' : '0';
+
+  // クリックハンドラ：改定後(Ⅱ) サマリー行 → アコーディオン開閉
+  wrap.querySelectorAll('tr[data-tier-summary]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const isOpen = wrap.dataset.tierOpen === '1';
+      wrap.dataset.tierOpen = isOpen ? '0' : '1';
+      onCalc();
+    });
+  });
+
+  // クリックハンドラ：区分行（選択後は自動で閉じる）
   wrap.querySelectorAll('tr[data-tier-id]').forEach(tr => {
     tr.addEventListener('click', () => {
       const id = Number(tr.dataset.tierId);
       selectedTierId = id === 0 ? null : id;
+      wrap.dataset.tierOpen = '0';
       onCalc();
     });
   });
