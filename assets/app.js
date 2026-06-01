@@ -195,7 +195,7 @@ function calculate(input) {
     return { ...t, monthly };
   });
   let priorUseTier = null;
-  if (isContinuous && input.revType === '1-and-2' && selectedPriorTierId !== null) {
+  if (isContinuous && selectedPriorTierId !== null) {
     priorUseTier = priorTierEvals.find(t => t.id === selectedPriorTierId) || null;
   }
   const priorRev2Monthly = priorUseTier ? priorUseTier.monthly : 0;
@@ -296,7 +296,7 @@ function renderTierTable(r) {
 function renderPriorTierTable(r) {
   const wrap = $('prior-tier-table-wrap');
   const section = $('prior-tier-selector');
-  const show = r.isContinuous && r.input.revType === '1-and-2';
+  const show = r.isContinuous;
 
   // 表示制御（非該当時は丸ごと非表示、印刷も除外）
   section.classList.toggle('hidden', !show);
