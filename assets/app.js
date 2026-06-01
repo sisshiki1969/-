@@ -15,14 +15,14 @@ const REV1_POINTS_PRIOR = { new: 6, rep: 2 };
 
 // 令和6年度改定の評価料(Ⅱ) 区分表（無床診療所、8区分）
 const REV2_TIERS_PRIOR = [
-  { id: 1, key: '区分1', new: 2,  rep: 1 },
-  { id: 2, key: '区分2', new: 4,  rep: 1 },
-  { id: 3, key: '区分3', new: 6,  rep: 2 },
-  { id: 4, key: '区分4', new: 8,  rep: 2 },
-  { id: 5, key: '区分5', new: 10, rep: 3 },
-  { id: 6, key: '区分6', new: 12, rep: 3 },
-  { id: 7, key: '区分7', new: 14, rep: 4 },
-  { id: 8, key: '区分8', new: 16, rep: 4 },
+  { id: 1, key: '区分1', new: 8,  rep: 1 },
+  { id: 2, key: '区分2', new: 16, rep: 2 },
+  { id: 3, key: '区分3', new: 24, rep: 3 },
+  { id: 4, key: '区分4', new: 32, rep: 4 },
+  { id: 5, key: '区分5', new: 40, rep: 5 },
+  { id: 6, key: '区分6', new: 48, rep: 6 },
+  { id: 7, key: '区分7', new: 56, rep: 7 },
+  { id: 8, key: '区分8', new: 64, rep: 8 },
 ];
 
 // 評価料(Ⅱ) 区分表（無床診療所）
