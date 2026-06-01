@@ -25,18 +25,24 @@ const REV2_TIERS_PRIOR = [
   { id: 8, key: '区分8', new: 64, rep: 8 },
 ];
 
-// 評価料(Ⅱ) 区分表（無床診療所）
+// 評価料(Ⅱ) 区分表（無床診療所、令和8年6月以降）
 const REV2_TIERS = {
+  // 「それ以外」（新規届出）: 12区分。区分N = 初診8N点／再診N点
   standard: [
-    { id: 1, key: '区分1', new: 8,  rep: 1 },
-    { id: 2, key: '区分2', new: 16, rep: 2 },
-    { id: 3, key: '区分3', new: 24, rep: 3 },
-    { id: 4, key: '区分4', new: 32, rep: 4 },
-    { id: 5, key: '区分5', new: 40, rep: 5 },
-    { id: 6, key: '区分6', new: 48, rep: 6 },
-    { id: 7, key: '区分7', new: 56, rep: 7 },
-    { id: 8, key: '区分8', new: 64, rep: 8 },
+    { id: 1,  key: '区分1',  new: 8,  rep: 1  },
+    { id: 2,  key: '区分2',  new: 16, rep: 2  },
+    { id: 3,  key: '区分3',  new: 24, rep: 3  },
+    { id: 4,  key: '区分4',  new: 32, rep: 4  },
+    { id: 5,  key: '区分5',  new: 40, rep: 5  },
+    { id: 6,  key: '区分6',  new: 48, rep: 6  },
+    { id: 7,  key: '区分7',  new: 56, rep: 7  },
+    { id: 8,  key: '区分8',  new: 64, rep: 8  },
+    { id: 9,  key: '区分9',  new: 72, rep: 9  },
+    { id: 10, key: '区分10', new: 80, rep: 10 },
+    { id: 11, key: '区分11', new: 88, rep: 11 },
+    { id: 12, key: '区分12', new: 96, rep: 12 },
   ],
+  // 「継続的賃上げ実施」: 12区分（最大160点）
   continuous: [
     { id: 1,  key: '区分1',  new: 16,  rep: 2  },
     { id: 2,  key: '区分2',  new: 24,  rep: 3  },
@@ -236,20 +242,25 @@ function renderTierTable(r) {
     return;
   }
 
+  const pt1 = r.pt1; // 改定後(Ⅰ)
+  const fmtSum = (a, b) => `<span class="text-slate-500">(Ⅰ)${a}+(Ⅱ)${b}=</span><span class="font-semibold">${a + b}点</span>`;
+  const fmtAlone = (a) => `<span class="text-slate-500">(Ⅰ)</span><span class="font-semibold">${a}点</span>`;
+
   const rows = r.tierEvals.map(t => {
     const isSelected = r.useTier && r.useTier.id === t.id;
     const rowCls = isSelected
       ? 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'
       : 'bg-amber-50/40 hover:bg-amber-100';
+    const totalMonthly = r.rev1Monthly + t.monthly; // (Ⅰ)+(Ⅱ)月額
 
     return `<tr data-tier-id="${t.id}" class="cursor-pointer ${rowCls} transition">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${isSelected ? '<span class="mr-1 text-brand-700">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
         ${t.key}
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${t.new}点</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${t.rep}点</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(t.monthly))}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtSum(pt1.new, t.new)}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtSum(pt1.rep, t.rep)}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(totalMonthly))}</td>
     </tr>`;
   }).join('');
 
@@ -257,21 +268,21 @@ function renderTierTable(r) {
     <tr data-tier-id="0" class="cursor-pointer transition ${r.useTier ? 'bg-amber-50/40 hover:bg-amber-100' : 'tier-row-selected bg-brand-100 ring-2 ring-brand-600'}">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${!r.useTier ? '<span class="mr-1 text-brand-700">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
-        (Ⅱ) を算定しない
+        (Ⅱ) を算定しない（(Ⅰ)のみ）
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">0</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtAlone(pt1.new)}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtAlone(pt1.rep)}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(r.rev1Monthly))}</td>
     </tr>`;
 
   wrap.innerHTML = `
-    <table class="w-full min-w-[520px] border-separate border-spacing-0 text-sm">
+    <table class="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
       <thead>
         <tr class="text-xs text-slate-500">
           <th class="rounded-tl-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">区分</th>
-          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診点数</th>
-          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診点数</th>
-          <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">(Ⅱ)月額(円)</th>
+          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診点数<span class="ml-0.5 text-[10px] text-slate-400">(Ⅰ+Ⅱ)</span></th>
+          <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診点数<span class="ml-0.5 text-[10px] text-slate-400">(Ⅰ+Ⅱ)</span></th>
+          <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">改定後の(Ⅰ)(Ⅱ)月額(円)</th>
         </tr>
       </thead>
       <tbody>${clearRow}${rows}</tbody>
