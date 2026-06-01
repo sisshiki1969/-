@@ -256,7 +256,7 @@ function renderTierTable(r) {
     </tr>`;
 
   // 改定後(Ⅱ) 行：クリックでアコーディオン開閉
-  const tierLabel = usingTier ? `（${r.useTier.key}）` : '<span class="text-slate-500">未選択</span>';
+  const tierLabel = usingTier ? `（${r.useTier.key}）` : '<span class="text-slate-500">算定なし</span>';
   const val2New = usingTier
     ? `<span class="font-semibold">${r.useTier.new}点</span>`
     : '<span class="text-slate-400">―</span>';
@@ -307,7 +307,7 @@ function renderTierTable(r) {
     <tr data-tier-id="0" class="cursor-pointer ${usingTier ? 'bg-white hover:bg-amber-50' : 'bg-brand-100 ring-2 ring-brand-600'} transition">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${!usingTier ? '<span class="mr-1 text-brand-700">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
-        (Ⅱ)を算定しない（(Ⅰ)のみ）
+        (Ⅱ)を算定しない
       </td>
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
