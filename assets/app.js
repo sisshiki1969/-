@@ -315,56 +315,44 @@ function renderPriorTierTable(r) {
   const wasOpen = wrap.dataset.tierOpen === '1';
   const open = wasOpen || usingTier; // 区分が選ばれていれば自動で開く
 
-  // ----- サマリー行（3行）-----
-  const row = (label, valNew, valRep, selected, dataAttr = '', extraCls = '') => `
-    <tr ${dataAttr} class="${selected ? 'bg-amber-100 ring-1 ring-amber-500' : 'bg-white hover:bg-amber-50'} transition ${extraCls}">
-      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">${label}</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${valNew}</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${valRep}</td>
-    </tr>`;
-
   // 改定前(Ⅰ)行（参考表示・選択不可）
-  const row1 = row(
-    '改定前(Ⅰ)',
-    `<span class="font-semibold">${priorPt1.new}点</span>`,
-    `<span class="font-semibold">${priorPt1.rep}点</span>`,
-    false,
-    '',
-    'opacity-90'
-  );
-
-  // 改定前(Ⅱ) 算定なし／算定あり（クリックで選択切替）
-  const noTierSelected = !usingTier;
-  const row2None = `
-    <tr data-prior-summary="none" class="cursor-pointer ${noTierSelected ? 'bg-amber-100 ring-2 ring-amber-500' : 'bg-amber-50/40 hover:bg-amber-100'} transition">
-      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
-        ${noTierSelected ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
-        改定前(Ⅱ) 算定なし<span class="ml-1 text-[11px] text-slate-500">（算定していた場合は下の行をクリック）</span>
-      </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
+  const row1 = `
+    <tr class="bg-white">
+      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">改定前(Ⅰ)</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-semibold">${priorPt1.new}点</span></td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-semibold">${priorPt1.rep}点</span></td>
     </tr>`;
 
-  // 改定前(Ⅰ)+(Ⅱ) のクリック行（区分を選んでいれば合計点を表示、未選択ならガイド）
-  const tierLabel = usingTier ? `（${r.priorUseTier.key}）` : '';
-  const valNewSum = usingTier
-    ? fmtSum(priorPt1.new, r.priorUseTier.new)
-    : '<span class="text-slate-400">区分を選択</span>';
-  const valRepSum = usingTier
-    ? fmtSum(priorPt1.rep, r.priorUseTier.rep)
-    : '<span class="text-slate-400">区分を選択</span>';
-  const row3Combo = `
-    <tr data-prior-summary="combo" class="cursor-pointer ${usingTier ? 'bg-amber-100 ring-2 ring-amber-500' : 'bg-amber-50/40 hover:bg-amber-100'} transition">
+  // 改定前(Ⅱ) 行：クリックでアコーディオン開閉＋区分選択
+  const tierLabel = usingTier ? `（${r.priorUseTier.key}）` : '<span class="text-slate-500">算定なし</span>';
+  const val2New = usingTier
+    ? `<span class="font-semibold">${r.priorUseTier.new}点</span>`
+    : '<span class="text-slate-400">―</span>';
+  const val2Rep = usingTier
+    ? `<span class="font-semibold">${r.priorUseTier.rep}点</span>`
+    : '<span class="text-slate-400">―</span>';
+  const row2 = `
+    <tr data-prior-summary="ii" class="cursor-pointer ${usingTier ? 'bg-amber-100 ring-2 ring-amber-500' : 'bg-amber-50/40 hover:bg-amber-100'} transition">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${usingTier ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
-        改定前(Ⅰ)+(Ⅱ) ${tierLabel}
+        改定前(Ⅱ) ${tierLabel}
         <span class="ml-1 inline-flex items-center gap-0.5 text-[11px] text-amber-700">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform ${open ? 'rotate-180' : ''}"><path d="m6 9 6 6 6-6"/></svg>
           ${open ? '区分を閉じる' : '区分を選ぶ'}
         </span>
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${valNewSum}</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${valRepSum}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${val2New}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${val2Rep}</td>
+    </tr>`;
+
+  // 改定前(Ⅰ)+(Ⅱ) 行：合計表示のみ
+  const totalNew = priorPt1.new + (usingTier ? r.priorUseTier.new : 0);
+  const totalRep = priorPt1.rep + (usingTier ? r.priorUseTier.rep : 0);
+  const row3 = `
+    <tr class="bg-slate-50/60">
+      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">改定前(Ⅰ)+(Ⅱ) <span class="text-xs text-slate-500">合計</span></td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-bold text-amber-700">${totalNew}点</span></td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-bold text-amber-700">${totalRep}点</span></td>
     </tr>`;
 
   // ----- 区分テーブル（アコーディオン内）-----
@@ -378,10 +366,21 @@ function renderPriorTierTable(r) {
         ${isSelected ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
         ${t.key}
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtSum(priorPt1.new, t.new)}</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtSum(priorPt1.rep, t.rep)}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-semibold">${t.new}点</span></td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums"><span class="font-semibold">${t.rep}点</span></td>
     </tr>`;
   }).join('');
+
+  // 「区分を選択しない（=算定なしに戻す）」行
+  const tierNoneRow = `
+    <tr data-prior-tier-id="0" class="cursor-pointer ${usingTier ? 'bg-white hover:bg-amber-50' : 'bg-amber-100 ring-2 ring-amber-500'} transition">
+      <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
+        ${!usingTier ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
+        算定していなかった
+      </td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums text-slate-400">―</td>
+    </tr>`;
 
   wrap.innerHTML = `
     <table class="w-full min-w-[420px] border-separate border-spacing-0 text-sm">
@@ -392,7 +391,7 @@ function renderPriorTierTable(r) {
           <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診点数</th>
         </tr>
       </thead>
-      <tbody>${row1}${row2None}${row3Combo}</tbody>
+      <tbody>${row1}${row2}${row3}</tbody>
     </table>
     <div id="prior-tier-accordion" class="${open ? '' : 'hidden'} mt-3 overflow-hidden rounded-lg border border-amber-300 bg-amber-50/30">
       <div class="border-b border-amber-200 bg-amber-100/60 px-3 py-1.5 text-[11px] font-medium text-amber-900">改定前に算定していた(Ⅱ)区分を選択してください</div>
@@ -400,31 +399,22 @@ function renderPriorTierTable(r) {
         <thead>
           <tr class="text-xs text-slate-500">
             <th class="border-b border-slate-200 bg-white px-3 py-2 text-left font-medium">区分</th>
-            <th class="border-b border-l border-slate-200 bg-white px-3 py-2 text-right font-medium">初診点数<span class="ml-0.5 text-[10px] text-slate-400">(Ⅰ+Ⅱ)</span></th>
-            <th class="border-b border-l border-slate-200 bg-white px-3 py-2 text-right font-medium">再診点数<span class="ml-0.5 text-[10px] text-slate-400">(Ⅰ+Ⅱ)</span></th>
+            <th class="border-b border-l border-slate-200 bg-white px-3 py-2 text-right font-medium">初診点数</th>
+            <th class="border-b border-l border-slate-200 bg-white px-3 py-2 text-right font-medium">再診点数</th>
           </tr>
         </thead>
-        <tbody>${tierRows}</tbody>
+        <tbody>${tierNoneRow}${tierRows}</tbody>
       </table>
     </div>`;
 
   wrap.dataset.tierOpen = open ? '1' : '0';
 
-  // クリックハンドラ：サマリー行
+  // クリックハンドラ：改定前(Ⅱ) サマリー行 → アコーディオン開閉
   wrap.querySelectorAll('tr[data-prior-summary]').forEach(tr => {
     tr.addEventListener('click', () => {
-      const which = tr.dataset.priorSummary;
-      if (which === 'none') {
-        selectedPriorTierId = null;
-        wrap.dataset.tierOpen = '0';
-        onCalc();
-      } else if (which === 'combo') {
-        // 区分未選択ならアコーディオン開閉のみ、選択済みなら開閉
-        const isOpen = wrap.dataset.tierOpen === '1';
-        wrap.dataset.tierOpen = isOpen ? '0' : '1';
-        // 未選択時にデフォルト区分はセットしない（ユーザーに選ばせる）
-        onCalc();
-      }
+      const isOpen = wrap.dataset.tierOpen === '1';
+      wrap.dataset.tierOpen = isOpen ? '0' : '1';
+      onCalc();
     });
   });
 
@@ -432,7 +422,7 @@ function renderPriorTierTable(r) {
   wrap.querySelectorAll('tr[data-prior-tier-id]').forEach(tr => {
     tr.addEventListener('click', () => {
       const id = Number(tr.dataset.priorTierId);
-      selectedPriorTierId = id;
+      selectedPriorTierId = id === 0 ? null : id;
       wrap.dataset.tierOpen = '1';
       onCalc();
     });
