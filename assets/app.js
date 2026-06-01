@@ -302,21 +302,22 @@ function renderPriorTierTable(r) {
   const priorPt1 = r.priorPt1; // 改定前(Ⅰ) = {new:6, rep:2}
   const priorRev1M = r.priorRev1Monthly; // 改定前(Ⅰ)月額
 
+  const fmtSum = (a, b) => `<span class="text-slate-500">(Ⅰ)${a}+(Ⅱ)${b}=</span><span class="font-semibold">${a + b}点</span>`;
+  const fmtAlone = (a) => `<span class="text-slate-500">(Ⅰ)</span><span class="font-semibold">${a}点</span>`;
+
   const rows = r.priorTierEvals.map(t => {
     const isSelected = r.priorUseTier && r.priorUseTier.id === t.id;
     const rowCls = isSelected
       ? 'prior-tier-row-selected bg-amber-100 ring-2 ring-amber-500'
       : 'bg-amber-50/40 hover:bg-amber-100';
-    const totalNew = priorPt1.new + t.new;
-    const totalRep = priorPt1.rep + t.rep;
     const totalMonthly = priorRev1M + t.monthly; // (Ⅰ)+(Ⅱ)月額
     return `<tr data-prior-tier-id="${t.id}" class="cursor-pointer ${rowCls} transition">
       <td class="border-t border-slate-200 px-3 py-2 text-sm font-medium text-slate-900">
         ${isSelected ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
         ${t.key}
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${totalNew}点</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${totalRep}点</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtSum(priorPt1.new, t.new)}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtSum(priorPt1.rep, t.rep)}</td>
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(totalMonthly))}</td>
     </tr>`;
   }).join('');
@@ -328,13 +329,13 @@ function renderPriorTierTable(r) {
         ${!r.priorUseTier ? '<span class="mr-1 text-amber-600">●</span>' : '<span class="mr-1 text-slate-300">○</span>'}
         改定前は(Ⅱ)を算定していない（(Ⅰ)のみ）
       </td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${priorPt1.new}点</td>
-      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${priorPt1.rep}点</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtAlone(priorPt1.new)}</td>
+      <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${fmtAlone(priorPt1.rep)}</td>
       <td class="border-t border-slate-200 px-3 py-2 text-right font-mono text-sm tabular-nums">${num.format(Math.round(priorRev1M))}</td>
     </tr>`;
 
   wrap.innerHTML = `
-    <table class="w-full min-w-[520px] border-separate border-spacing-0 text-sm">
+    <table class="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
       <thead>
         <tr class="text-xs text-slate-500">
           <th class="rounded-tl-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">改定前(Ⅱ)区分</th>
