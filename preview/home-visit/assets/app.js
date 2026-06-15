@@ -5,13 +5,14 @@ const POINT_YEN = 10;
 const WELFARE_RATIO = 0.165; // 法定福利費 事業主負担（健保・厚年・労災・子育拠出金等の概算）
 
 // 評価料(Ⅰ) 点数表（令和8年6月～、賃上げ区分別）
+// new=初診時、rep=再診時、homeAlone=訪問診療同一建物居住者等以外、homeGroup=訪問診療同一建物居住者
 const REV1_POINTS_TABLE = {
-  standard:   { new: 17, rep: 4 },
-  continuous: { new: 23, rep: 6 },
+  standard:   { new: 17, rep: 4, homeAlone: 79, homeGroup: 19 },
+  continuous: { new: 23, rep: 6, homeAlone: 79, homeGroup: 19 },
 };
 
 // 令和6年度改定の評価料(Ⅰ) 点数（改定前＝令和8年5月以前）
-const REV1_POINTS_PRIOR = { new: 6, rep: 2 };
+const REV1_POINTS_PRIOR = { new: 6, rep: 2, homeAlone: 28, homeGroup: 7 };
 
 // 令和6年度改定の評価料(Ⅱ) 区分表（無床診療所、8区分）
 const REV2_TIERS_PRIOR = [
@@ -153,14 +154,14 @@ function readInputs() {
   const hasStaff = staffRaw !== '' && Number.isFinite(staffNum) && staffNum >= 1;
   const avgInitial   = avgOfFilled(COUNT_NEW_IDS);
   const avgFollowup  = avgOfFilled(COUNT_REP_IDS);
-  const avgHomeAlone = avgOfFilled(COUNT_HOME1_IDS); // 同一建物居住者以外
-  const avgHomeGroup = avgOfFilled(COUNT_HOME2_IDS); // 同一建物居住者
+  const avgHomeAlone = avgOfFilled(COUNT_HOME1_IDS); // 訪問同一建物以外
+  const avgHomeGroup = avgOfFilled(COUNT_HOME2_IDS); // 訪問同一建物
   return {
-    // 種別ごとの平均（表示用）
+    // 種別ごとの平均
     avgInitial, avgFollowup, avgHomeAlone, avgHomeGroup,
-    // 計算用に集約（初診相当・再診相当）
-    avgNew: avgInitial + avgHomeAlone,
-    avgRep: avgFollowup + avgHomeGroup,
+    // (Ⅱ)用の集約: 訪問は両方とも「初診時」と同じ単価
+    avgNew: avgInitial + avgHomeAlone + avgHomeGroup,
+    avgRep: avgFollowup,
     revType:   radioVal('rev-type')   || '1-only',
     raiseType: radioVal('raise-type') || 'continuous',
     staffCount: hasStaff ? staffNum : null,
@@ -178,15 +179,17 @@ function getRev2Tiers(input) {
 }
 
 function calculate(input) {
-  const avgNew = input.avgNew;
-  const avgRep = input.avgRep;
+  const avgNew = input.avgNew; // (Ⅱ)用集約値: 初診+訪問外+訪問内
+  const avgRep = input.avgRep; // (Ⅱ)用集約値: 再診
   const isContinuous = input.raiseType === 'continuous';
 
-  // 改定後(Ⅰ) 月額
+  // 改定後(Ⅰ) 月額: 初診/再診/訪問外/訪問内それぞれ独立点数
   const pt1 = getRev1Points(input);
-  const rev1NewMonthly = avgNew * pt1.new * POINT_YEN;
-  const rev1RepMonthly = avgRep * pt1.rep * POINT_YEN;
-  const rev1Monthly = rev1NewMonthly + rev1RepMonthly;
+  const rev1NewMonthly       = input.avgInitial   * pt1.new       * POINT_YEN;
+  const rev1RepMonthly       = input.avgFollowup  * pt1.rep       * POINT_YEN;
+  const rev1HomeAloneMonthly = input.avgHomeAlone * pt1.homeAlone * POINT_YEN;
+  const rev1HomeGroupMonthly = input.avgHomeGroup * pt1.homeGroup * POINT_YEN;
+  const rev1Monthly = rev1NewMonthly + rev1RepMonthly + rev1HomeAloneMonthly + rev1HomeGroupMonthly;
 
   // 改定後(Ⅱ) 各区分の試算
   const tiers = getRev2Tiers(input);
@@ -206,7 +209,10 @@ function calculate(input) {
   // 改定前(令和8年3月時点)の(Ⅰ)(Ⅱ)月額（継続的賃上げ実施の場合のみ控除）
   const priorPt1 = REV1_POINTS_PRIOR;
   const priorRev1Monthly = isContinuous
-    ? (avgNew * priorPt1.new + avgRep * priorPt1.rep) * POINT_YEN
+    ? (input.avgInitial  * priorPt1.new
+     + input.avgFollowup * priorPt1.rep
+     + input.avgHomeAlone* priorPt1.homeAlone
+     + input.avgHomeGroup* priorPt1.homeGroup) * POINT_YEN
     : 0;
 
   const priorTierEvals = REV2_TIERS_PRIOR.map(t => {
@@ -233,7 +239,7 @@ function calculate(input) {
   return {
     input, avgNew, avgRep,
     pt1, tiers, tierEvals, useTier,
-    rev1NewMonthly, rev1RepMonthly, rev1Monthly,
+    rev1NewMonthly, rev1RepMonthly, rev1HomeAloneMonthly, rev1HomeGroupMonthly, rev1Monthly,
     rev2Monthly,
     // 改定前関連
     isContinuous,
@@ -532,19 +538,28 @@ function render(r) {
   renderAverages();
 
   // 令和8年6月以降の点数（式形式）
-  $('r-formula-new').innerHTML = buildFormula(r.pt1.new, r.useTier ? r.useTier.new : null, r.useTier ? r.useTier.key : null);
-  $('r-formula-rep').innerHTML = buildFormula(r.pt1.rep, r.useTier ? r.useTier.rep : null, r.useTier ? r.useTier.key : null);
-  $('r-formula-new').classList.remove('text-slate-400');
-  $('r-formula-rep').classList.remove('text-slate-400');
+  // 改定後の式表示（初診/再診/訪問外/訪問内）。(Ⅱ)では訪問は初診と同じ単価
+  const ut = r.useTier;
+  const utKey = ut ? ut.key : null;
+  $('r-formula-new').innerHTML   = buildFormula(r.pt1.new,       ut ? ut.new : null, utKey);
+  $('r-formula-rep').innerHTML   = buildFormula(r.pt1.rep,       ut ? ut.rep : null, utKey);
+  $('r-formula-home1').innerHTML = buildFormula(r.pt1.homeAlone, ut ? ut.new : null, utKey);
+  $('r-formula-home2').innerHTML = buildFormula(r.pt1.homeGroup, ut ? ut.new : null, utKey);
+  ['r-formula-new','r-formula-rep','r-formula-home1','r-formula-home2']
+    .forEach(id => $(id).classList.remove('text-slate-400'));
 
   // 令和8年5月までの点数（継続的賃上げ実施の場合のみ）
   const priorBlock = $('prior-formula-block');
   if (r.isContinuous) {
     priorBlock.classList.remove('hidden');
-    $('r-formula-prior-new').innerHTML = buildFormula(r.priorPt1.new, r.priorUseTier ? r.priorUseTier.new : null, r.priorUseTier ? r.priorUseTier.key : null);
-    $('r-formula-prior-rep').innerHTML = buildFormula(r.priorPt1.rep, r.priorUseTier ? r.priorUseTier.rep : null, r.priorUseTier ? r.priorUseTier.key : null);
-    $('r-formula-prior-new').classList.remove('text-slate-400');
-    $('r-formula-prior-rep').classList.remove('text-slate-400');
+    const put = r.priorUseTier;
+    const putKey = put ? put.key : null;
+    $('r-formula-prior-new').innerHTML   = buildFormula(r.priorPt1.new,       put ? put.new : null, putKey);
+    $('r-formula-prior-rep').innerHTML   = buildFormula(r.priorPt1.rep,       put ? put.rep : null, putKey);
+    $('r-formula-prior-home1').innerHTML = buildFormula(r.priorPt1.homeAlone, put ? put.new : null, putKey);
+    $('r-formula-prior-home2').innerHTML = buildFormula(r.priorPt1.homeGroup, put ? put.new : null, putKey);
+    ['r-formula-prior-new','r-formula-prior-rep','r-formula-prior-home1','r-formula-prior-home2']
+      .forEach(id => $(id).classList.remove('text-slate-400'));
   } else {
     priorBlock.classList.add('hidden');
   }
@@ -589,10 +604,12 @@ function render(r) {
     $('r-staff-display').textContent = '―';
   }
 
-  // (Ⅰ) 内訳
+  // (Ⅰ) 内訳: 初診/再診/訪問外/訪問内 の4種別
   const rows = [
-    ['初診', r.pt1.new, r.avgNew, r.rev1NewMonthly],
-    ['再診', r.pt1.rep, r.avgRep, r.rev1RepMonthly],
+    ['初診',              r.pt1.new,       r.input.avgInitial,   r.rev1NewMonthly],
+    ['再診',              r.pt1.rep,       r.input.avgFollowup,  r.rev1RepMonthly],
+    ['訪問診療(同一建物外)', r.pt1.homeAlone, r.input.avgHomeAlone, r.rev1HomeAloneMonthly],
+    ['訪問診療(同一建物内)', r.pt1.homeGroup, r.input.avgHomeGroup, r.rev1HomeGroupMonthly],
   ];
   $('rev1-breakdown').innerHTML = rows.map(([label, pt, cnt, monthly]) => `
     <tr>
@@ -616,8 +633,8 @@ function render(r) {
     const r2NewMonthly = r.avgNew * r.useTier.new * POINT_YEN;
     const r2RepMonthly = r.avgRep * r.useTier.rep * POINT_YEN;
     const r2Rows = [
-      ['初診', r.useTier.new, r.avgNew, r2NewMonthly],
-      ['再診', r.useTier.rep, r.avgRep, r2RepMonthly],
+      ['初診・訪問診療', r.useTier.new, r.avgNew, r2NewMonthly],
+      ['再診',         r.useTier.rep, r.avgRep, r2RepMonthly],
     ];
     rev2Body.innerHTML = r2Rows.map(([label, pt, cnt, monthly]) => `
       <tr>
@@ -693,13 +710,16 @@ function renderAverages() {
 function renderIncomplete() {
   $('result-notice').classList.remove('hidden');
 
-  $('r-formula-new').innerHTML = '―';
-  $('r-formula-rep').innerHTML = '―';
-  $('r-formula-new').classList.add('text-slate-400');
-  $('r-formula-rep').classList.add('text-slate-400');
+  ['r-formula-new','r-formula-rep','r-formula-home1','r-formula-home2'].forEach(id => {
+    const el = $(id);
+    if (el) { el.innerHTML = '―'; el.classList.add('text-slate-400'); }
+  });
   const priorBlock = $('prior-formula-block');
   if (priorBlock) priorBlock.classList.add('hidden');
-  ['r-formula-prior-new', 'r-formula-prior-rep'].forEach(id => { const el = $(id); if (el) { el.innerHTML = '―'; el.classList.add('text-slate-400'); } });
+  ['r-formula-prior-new','r-formula-prior-rep','r-formula-prior-home1','r-formula-prior-home2'].forEach(id => {
+    const el = $(id);
+    if (el) { el.innerHTML = '―'; el.classList.add('text-slate-400'); }
+  });
 
   ['r-rev1-monthly', 'r-rev2-monthly', 'r-gross-monthly', 'r-prior-monthly',
    'r-total-monthly', 'r-total-yearly',
