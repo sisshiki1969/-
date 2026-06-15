@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="外来・在宅ベースアップ評価料シミュレータの操作マニュアル。無床診療所向け・令和8年度改定対応。3か月の算定回数を入力するだけで増収額と1人あたりベースアップ額を試算します。" />
+<title>操作マニュアル｜外来・在宅ベースアップ評価料シミュレータ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230f766e' d='M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4Zm-1 5h2v3h3v2h-3v3h-2v-3H8v-2h3V7Z'/%3E%3C/svg%3E" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      fontFamily: { sans: ['"Inter"','"Hiragino Sans"','"Noto Sans JP"','system-ui','sans-serif'] },
+      colors: { brand: { 50:'#f0fdfa',100:'#ccfbf1',200:'#99f6e4',500:'#14b8a6',600:'#0d9488',700:'#0f766e',800:'#115e59',900:'#134e4a' } },
+      boxShadow: { card:'0 1px 2px 0 rgb(0 0 0 / 0.04), 0 1px 3px 0 rgb(0 0 0 / 0.06)' },
+    } },
+  };
+</script>
+<style>@media print{.no-print{display:none!important}body{background:#fff!important}}</style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+
+<!-- ヘッダー -->
+<header class="no-print sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
+  <div class="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
+    <a href="../index.html" class="flex items-center gap-2">
+      <span class="grid h-9 w-9 place-content-center rounded-lg bg-brand-700 text-white shadow-card">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4Zm-1 5h2v3h3v2h-3v3h-2v-3H8v-2h3V7Z"/></svg>
+      </span>
+      <div class="leading-tight">
+        <div class="text-sm font-semibold text-slate-900">操作マニュアル</div>
+        <div class="text-[11px] text-slate-500">ベースアップ評価料シミュレータ</div>
+      </div>
+    </a>
+    <div class="flex items-center gap-2">
+      <a href="manual.pdf" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50" download>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        PDF版
+      </a>
+      <a href="../index.html" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-3 py-2 text-sm font-medium text-white shadow-card transition hover:bg-brand-800">
+        ツールへ戻る
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+
+  <!-- タイトル -->
+  <div class="mb-6">
+    <span class="inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-800">令和8年度（2026年6月）改定対応 / 無床診療所向け</span>
+    <h1 class="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">操作マニュアル</h1>
+    <p class="mt-2 text-sm leading-7 text-slate-600">
+      本ツールは、直近3か月の初診・再診算定回数を入力するだけで、外来・在宅ベースアップ評価料（令和8年6月改定後）による月間想定増収額と、
+      社会保険料の事業主負担増を差し引いたベースアップ原資・1人あたりベースアップ額を自動で試算します。
+      <span class="font-medium text-brand-800">既にベースアップ評価料を算定している医療機関は、改定前の算定額を差し引いた純増分</span>を表示します。
+      入力データは端末内で処理され、外部に送信されません。
+    </p>
+  </div>
+
+  <!-- フロー -->
+  <div class="mb-8 rounded-xl border border-brand-200 bg-brand-50/70 p-4 sm:p-5">
+    <div class="text-sm font-semibold text-brand-900">全体の流れ（①→②→③ の順に入力するだけ）</div>
+    <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-1.5">
+      <div class="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 shadow-sm">
+        <span class="grid h-6 w-6 flex-none place-content-center rounded-full bg-amber-500 text-xs font-bold text-white">1</span>
+        <span class="text-sm text-slate-700">3か月分の回数を入力</span>
+      </div>
+      <span class="hidden text-slate-400 sm:inline">→</span>
+      <div class="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 shadow-sm">
+        <span class="grid h-6 w-6 flex-none place-content-center rounded-full bg-amber-500 text-xs font-bold text-white">2</span>
+        <span class="text-sm text-slate-700">算定パターンと人数を選ぶ</span>
+      </div>
+      <span class="hidden text-slate-400 sm:inline">→</span>
+      <div class="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 shadow-sm">
+        <span class="grid h-6 w-6 flex-none place-content-center rounded-full bg-amber-500 text-xs font-bold text-white">3</span>
+        <span class="text-sm text-slate-700">（必要なら）区分を選ぶ</span>
+      </div>
+      <span class="hidden text-emerald-500 sm:inline">⇒</span>
+      <div class="flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-white shadow-sm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <span class="text-sm font-medium">結果が自動で表示されます</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 入力する -->
+  <h2 class="mb-3 rounded-lg bg-brand-700 px-4 py-2 text-base font-semibold text-white">入力する（黄色の欄に入力・選択します）</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <!-- STEP1 -->
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
+      <div class="flex items-center gap-3">
+        <span class="grid h-7 w-7 flex-none place-content-center rounded-full bg-amber-500 text-xs font-bold text-white">1</span>
+        <h3 class="text-base font-semibold text-slate-900">3か月分の算定回数を入力</h3>
+      </div>
+      <div class="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm leading-7 text-slate-700">
+        直近3か月分の初診料・再診料の算定回数（月ごとの合計）を黄色の欄に入力します。
+        <ul class="mt-1 list-disc pl-5 text-[13px]">
+          <li><span class="font-medium">3か月平均</span>は自動で計算・表示されます。</li>
+          <li>どれか1つでも入力すると<span class="font-medium text-amber-700">計算が始まります</span>。</li>
+          <li>空欄の月は平均から除外されます（全部空欄なら0）。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- STEP2 -->
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
+      <div class="flex items-center gap-3">
+        <span class="grid h-7 w-7 flex-none place-content-center rounded-full bg-amber-500 text-xs font-bold text-white">2</span>
+        <h3 class="text-base font-semibold text-slate-900">算定パターンと対象人数を選ぶ</h3>
+      </div>
+      <div class="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm leading-7 text-slate-700">
+        <p><span class="font-medium">(1) 算定する評価料</span>：「(Ⅰ)のみ」か「(Ⅰ)+(Ⅱ)」を選択。</p>
+        <p class="mt-1"><span class="font-medium">(2) 賃上げ区分</span>：以下の2択。
+          <span class="mt-1 block rounded bg-white/70 px-2 py-1 text-[12px]">
+            ・<span class="font-medium">2026年3月31日時点でベースアップ評価料を届け出ている保険医療機関</span>（継続的賃上げ実施）<br>
+            ・<span class="font-medium">それ以外</span>（新規届出）
+          </span>
+        </p>
+        <p class="mt-1"><span class="font-medium">(3) ベースアップ対象従業員数</span>：医師・歯科医師を除く看護職員・薬剤師・事務職員等の人数。<span class="font-medium text-amber-700">空欄でも計算可</span>（その場合「1人あたり額」のみ非表示）。</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- 改定前(II)区分 -->
+  <section class="mt-4 rounded-xl border border-amber-300 bg-amber-50/40 p-5 shadow-card">
+    <div class="flex flex-wrap items-center gap-3">
+      <span class="grid h-7 w-7 flex-none place-content-center rounded-full bg-amber-500 text-xs font-bold text-white">2.5</span>
+      <h3 class="text-base font-semibold text-slate-900">改定前（令和8年3月時点）の評価料(Ⅱ) 区分</h3>
+      <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">継続的賃上げ実施を選んだ場合のみ</span>
+    </div>
+    <div class="mt-3 rounded-lg border border-amber-300 bg-white p-3 text-sm leading-7 text-slate-700">
+      「継続的賃上げ実施」を選んだ場合は、改定前にすでに算定していた評価料の額をシステムが自動で差し引きます。
+      <span class="font-medium">改定前（令和8年3月時点）に算定していた(Ⅱ)の区分</span>を表からクリックして選んでください。
+      <ul class="mt-1 list-disc pl-5 text-[13px]">
+        <li>(Ⅱ)区分の各行は<span class="font-medium">改定前(Ⅰ)+(Ⅱ)の合計点数と月額</span>を表示しています。</li>
+        <li>改定前に(Ⅱ)を算定していなかった場合は<span class="font-medium">「改定前は(Ⅱ)を算定していない（(Ⅰ)のみ）」</span>を選択してください。</li>
+        <li>「それ以外」を選んだ場合（新規届出）は控除されず、改定後の総額がそのまま表示されます。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- STEP3 -->
+  <section class="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-card">
+    <div class="flex items-center gap-3">
+      <span class="grid h-7 w-7 flex-none place-content-center rounded-full bg-amber-500 text-xs font-bold text-white">3</span>
+      <h3 class="text-base font-semibold text-slate-900">改定後（令和8年6月～）の評価料(Ⅱ) の区分を選ぶ</h3>
+    </div>
+    <div class="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm leading-7 text-slate-700">
+      ②で「(Ⅰ)+(Ⅱ)」を選んだ場合のみ表示されます。画面の区分一覧表で、算定する区分の行をクリックして選びます。
+      選んだ区分が増収額・ベースアップ原資に反映されます。（評価料(Ⅰ)のみを算定する場合、この操作は不要です）
+    </div>
+  </section>
+
+  <!-- 結果を見る -->
+  <h2 class="mb-3 mt-8 rounded-lg bg-emerald-600 px-4 py-2 text-base font-semibold text-white">結果を見る（入力すると自動で計算されます。入力は不要です）</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
+      <h3 class="text-base font-semibold text-slate-900">令和8年6月以降の点数</h3>
+      <p class="mt-2 text-sm leading-7 text-slate-700">初診・再診それぞれに対し、(Ⅰ)+(Ⅱ)の合計点数を以下のような式で表示します。</p>
+      <pre class="mt-2 rounded-md bg-slate-50 p-2 text-[13px] font-mono text-slate-800">例：23点（Ⅰ）＋ 16点（Ⅱ 区分1）＝ 39点</pre>
+      <p class="mt-3 rounded-md bg-amber-50 p-2 text-[12px] leading-6 text-amber-900">
+        <span class="font-medium">継続的賃上げ実施</span>の場合は、その下に<span class="font-medium">「令和8年5月までの点数」</span>も同じ形式で並びます（薄いグレー背景）。差額がそのまま純増点数となります。
+      </p>
+    </section>
+
+    <section class="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+      <h3 class="flex items-center gap-2 text-base font-semibold text-emerald-900">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        月間想定増収額（令和8年6月以降）
+      </h3>
+      <ul class="mt-2 list-disc pl-5 text-sm leading-7 text-slate-700">
+        <li>評価料(Ⅰ)の増収（月額）</li>
+        <li>評価料(Ⅱ)の増収（月額）※区分選択時</li>
+        <li class="text-amber-800"><span class="font-medium">継続的賃上げ実施</span>の場合：改定後合計から改定前(Ⅰ)(Ⅱ)月額を控除した<span class="font-medium">純増分</span>を表示</li>
+        <li><span class="font-medium">合計増収額（月額／年額）</span></li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+    <h3 class="flex items-center gap-2 text-base font-semibold text-emerald-900">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      令和8年6月からのベースアップの原資 / 1人あたりベースアップ額
+    </h3>
+    <ul class="mt-2 list-disc pl-5 text-sm leading-7 text-slate-700">
+      <li>増収額から<span class="font-medium">社会保険料の事業主負担増（約16.5%）</span>を差し引いたベースアップの原資（月額／年額）</li>
+      <li>ベースアップ原資 ÷ 対象従業員数 ＝ <span class="font-medium">1人あたりベースアップ額</span>（月額／年額）</li>
+      <li>対象従業員数が空欄のときは、1人あたり額のみ「―」表示になります。</li>
+    </ul>
+  </section>
+
+  <!-- 点数早見 -->
+  <h2 class="mb-3 mt-8 rounded-lg bg-brand-700 px-4 py-2 text-base font-semibold text-white">令和8年6月～の点数（早見）<span class="ml-1 text-xs font-normal text-brand-100">※1点＝10円</span></h2>
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-xs text-slate-500"><tr>
+          <th class="px-3 py-2 text-left font-medium">評価料(Ⅰ)</th>
+          <th class="px-3 py-2 text-right font-medium">初診</th>
+          <th class="px-3 py-2 text-right font-medium">再診</th>
+        </tr></thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          <tr><td class="px-3 py-2">2026/3/31時点で届出済（継続的賃上げ実施）</td><td class="px-3 py-2 text-right font-mono">23点</td><td class="px-3 py-2 text-right font-mono">6点</td></tr>
+          <tr><td class="px-3 py-2">それ以外（新規届出）</td><td class="px-3 py-2 text-right font-mono">17点</td><td class="px-3 py-2 text-right font-mono">4点</td></tr>
+          <tr class="bg-slate-50/60 text-slate-500"><td class="px-3 py-2 text-[12px]">（参考）令和8年5月までの(Ⅰ)</td><td class="px-3 py-2 text-right font-mono text-[12px]">6点</td><td class="px-3 py-2 text-right font-mono text-[12px]">2点</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-xs text-slate-500"><tr>
+          <th class="px-3 py-2 text-left font-medium">評価料(Ⅱ)</th>
+          <th class="px-3 py-2 text-right font-medium">区分数</th>
+          <th class="px-3 py-2 text-left font-medium">備考</th>
+        </tr></thead>
+        <tbody class="divide-y divide-slate-100 text-slate-700">
+          <tr><td class="px-3 py-2">継続的賃上げ実施</td><td class="px-3 py-2 text-right font-mono">12区分</td><td class="px-3 py-2 text-[13px]">初診・再診に区分点数を加算</td></tr>
+          <tr><td class="px-3 py-2">それ以外</td><td class="px-3 py-2 text-right font-mono">8区分</td><td class="px-3 py-2 text-[13px]">外来延患者数に応じ選択</td></tr>
+          <tr class="bg-slate-50/60 text-slate-500"><td class="px-3 py-2 text-[12px]">（参考）改定前(Ⅱ)</td><td class="px-3 py-2 text-right font-mono text-[12px]">8区分</td><td class="px-3 py-2 text-[12px]">継続的賃上げ実施時の控除に使用</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 便利な機能 -->
+  <h2 class="mb-3 mt-8 rounded-lg bg-brand-700 px-4 py-2 text-base font-semibold text-white">便利な機能</h2>
+  <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <tbody class="divide-y divide-slate-100 text-slate-700">
+        <tr><td class="w-40 px-3 py-2.5 font-medium text-brand-800">クリア</td><td class="px-3 py-2.5">すべての入力欄を空欄に戻します。</td></tr>
+        <tr><td class="px-3 py-2.5 font-medium text-brand-800">印刷 / PDF</td><td class="px-3 py-2.5">試算結果を印刷、またはPDFとして保存できます（選択した区分・選択肢のみ印刷されます）。</td></tr>
+        <tr><td class="px-3 py-2.5 font-medium text-brand-800">計算の詳細を表示</td><td class="px-3 py-2.5">クリックで、評価料(Ⅰ)(Ⅱ)の内訳とベースアップ原資の計算過程を開閉できます。</td></tr>
+        <tr><td class="px-3 py-2.5 font-medium text-brand-800">データの保存</td><td class="px-3 py-2.5">入力内容は自動的にブラウザに保存され、次回開いたときに復元されます。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 注意 -->
+  <section class="mt-8 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-900">
+    <strong class="font-semibold">ご利用上の注意</strong><br/>
+    本ツールの試算結果は厚生労働省の告示・通知に基づく目安です。実際の届出・算定にあたっては、必ず最新の通知および地方厚生(支)局の指導内容をご確認ください。試算結果に基づく算定・経営判断について、本サイトは一切の責任を負いません。
+  </section>
+
+  <div class="no-print mt-8 flex flex-wrap gap-3">
+    <a href="../index.html" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-medium text-white shadow-card transition hover:bg-brand-800">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      シミュレータへ戻る
+    </a>
+    <a href="manual.pdf" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50" download>
+      PDF版をダウンロード
+    </a>
+  </div>
+
+</main>
+
+<footer class="no-print mt-8 border-t border-slate-200 bg-white">
+  <div class="mx-auto max-w-4xl px-4 py-6 text-xs text-slate-500 sm:px-6">
+    © <span id="year"></span> 外来・在宅ベースアップ評価料シミュレータ ／ 無床診療所向け・令和8年度改定対応
+  </div>
+</footer>
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
