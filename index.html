@@ -142,16 +142,22 @@
           <h2 class="text-base font-semibold text-slate-900">3か月分の算定回数を入力</h2>
         </div>
         <p class="mt-2 text-xs text-slate-500">
-          直近3か月の初診料・再診料の算定回数（月合計）を入力してください。月平均を自動算出します。
+          直近3か月の<span class="font-medium">初診料・再診料・訪問診療料</span>の算定回数（月合計）を入力してください。月平均を自動算出します。
+          訪問診療料は外来・在宅ベースアップ評価料の点数構造上、「同一建物居住者以外」は<span class="text-brand-700 font-medium">初診時と同じ点数</span>、「同一建物居住者」は<span class="text-brand-700 font-medium">再診時と同じ点数</span>で算定されます。
         </p>
 
         <div class="mt-5 overflow-x-auto">
-          <table class="w-full min-w-[480px] border-separate border-spacing-0 text-sm">
+          <table class="w-full min-w-[680px] border-separate border-spacing-0 text-sm">
             <thead>
               <tr class="text-xs text-slate-500">
-                <th class="rounded-tl-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">対象月</th>
-                <th class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診料（回/月）</th>
-                <th class="rounded-tr-lg border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診料（回/月）</th>
+                <th rowspan="2" class="rounded-tl-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left font-medium">対象月</th>
+                <th rowspan="2" class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">初診料<br><span class="text-[10px] text-slate-400">(回/月)</span></th>
+                <th rowspan="2" class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-2 text-right font-medium">再診料<br><span class="text-[10px] text-slate-400">(回/月)</span></th>
+                <th colspan="2" class="border border-l-0 border-slate-200 bg-slate-50 px-3 py-1.5 text-center font-medium">訪問診療料Ⅰ <span class="text-[10px] text-slate-400">(回/月)</span></th>
+              </tr>
+              <tr class="text-xs text-slate-500">
+                <th class="border border-l-0 border-t-0 border-slate-200 bg-slate-50 px-2 py-1.5 text-right font-medium">同一建物居住者<span class="text-[10px] font-normal text-slate-400">以外</span></th>
+                <th class="rounded-tr-lg border border-l-0 border-t-0 border-slate-200 bg-slate-50 px-2 py-1.5 text-right font-medium">同一建物居住者</th>
               </tr>
             </thead>
             <tbody>
@@ -163,6 +169,12 @@
                 <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1.5">
                   <input id="m1-rep" type="number" inputmode="numeric" min="0" placeholder="例 1000" class="block w-full rounded border-amber-300 bg-amber-50 px-2 py-1.5 text-right font-mono text-sm tabular-nums shadow-sm placeholder:text-slate-400 focus:border-amber-500 focus:ring-amber-500" />
                 </td>
+                <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1.5">
+                  <input id="m1-home1" type="number" inputmode="numeric" min="0" placeholder="例 0" class="block w-full rounded border-amber-300 bg-amber-50 px-2 py-1.5 text-right font-mono text-sm tabular-nums shadow-sm placeholder:text-slate-400 focus:border-amber-500 focus:ring-amber-500" />
+                </td>
+                <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1.5">
+                  <input id="m1-home2" type="number" inputmode="numeric" min="0" placeholder="例 0" class="block w-full rounded border-amber-300 bg-amber-50 px-2 py-1.5 text-right font-mono text-sm tabular-nums shadow-sm placeholder:text-slate-400 focus:border-amber-500 focus:ring-amber-500" />
+                </td>
               </tr>
               <tr>
                 <td class="border border-t-0 border-slate-200 px-3 py-2 text-slate-700">2か月目</td>
@@ -171,6 +183,12 @@
                 </td>
                 <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1.5">
                   <input id="m2-rep" type="number" inputmode="numeric" min="0" placeholder="例 1000" class="block w-full rounded border-amber-300 bg-amber-50 px-2 py-1.5 text-right font-mono text-sm tabular-nums shadow-sm placeholder:text-slate-400 focus:border-amber-500 focus:ring-amber-500" />
+                </td>
+                <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1.5">
+                  <input id="m2-home1" type="number" inputmode="numeric" min="0" placeholder="例 0" class="block w-full rounded border-amber-300 bg-amber-50 px-2 py-1.5 text-right font-mono text-sm tabular-nums shadow-sm placeholder:text-slate-400 focus:border-amber-500 focus:ring-amber-500" />
+                </td>
+                <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1.5">
+                  <input id="m2-home2" type="number" inputmode="numeric" min="0" placeholder="例 0" class="block w-full rounded border-amber-300 bg-amber-50 px-2 py-1.5 text-right font-mono text-sm tabular-nums shadow-sm placeholder:text-slate-400 focus:border-amber-500 focus:ring-amber-500" />
                 </td>
               </tr>
               <tr>
@@ -181,6 +199,12 @@
                 <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1.5">
                   <input id="m3-rep" type="number" inputmode="numeric" min="0" placeholder="例 1000" class="block w-full rounded border-amber-300 bg-amber-50 px-2 py-1.5 text-right font-mono text-sm tabular-nums shadow-sm placeholder:text-slate-400 focus:border-amber-500 focus:ring-amber-500" />
                 </td>
+                <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1.5">
+                  <input id="m3-home1" type="number" inputmode="numeric" min="0" placeholder="例 0" class="block w-full rounded border-amber-300 bg-amber-50 px-2 py-1.5 text-right font-mono text-sm tabular-nums shadow-sm placeholder:text-slate-400 focus:border-amber-500 focus:ring-amber-500" />
+                </td>
+                <td class="border border-l-0 border-t-0 border-slate-200 px-2 py-1.5">
+                  <input id="m3-home2" type="number" inputmode="numeric" min="0" placeholder="例 0" class="block w-full rounded border-amber-300 bg-amber-50 px-2 py-1.5 text-right font-mono text-sm tabular-nums shadow-sm placeholder:text-slate-400 focus:border-amber-500 focus:ring-amber-500" />
+                </td>
               </tr>
               <tr class="bg-brand-50/60 font-medium">
                 <td class="rounded-bl-lg border border-t-0 border-slate-200 px-3 py-2 text-brand-900">3か月平均</td>
@@ -188,8 +212,16 @@
                   <span id="avg-new" class="font-mono tabular-nums text-brand-900">―</span>
                   <span class="ml-1 text-xs text-brand-700">回/月</span>
                 </td>
-                <td class="rounded-br-lg border border-l-0 border-t-0 border-slate-200 px-3 py-2 text-right">
+                <td class="border border-l-0 border-t-0 border-slate-200 px-3 py-2 text-right">
                   <span id="avg-rep" class="font-mono tabular-nums text-brand-900">―</span>
+                  <span class="ml-1 text-xs text-brand-700">回/月</span>
+                </td>
+                <td class="border border-l-0 border-t-0 border-slate-200 px-3 py-2 text-right">
+                  <span id="avg-home1" class="font-mono tabular-nums text-brand-900">―</span>
+                  <span class="ml-1 text-xs text-brand-700">回/月</span>
+                </td>
+                <td class="rounded-br-lg border border-l-0 border-t-0 border-slate-200 px-3 py-2 text-right">
+                  <span id="avg-home2" class="font-mono tabular-nums text-brand-900">―</span>
                   <span class="ml-1 text-xs text-brand-700">回/月</span>
                 </td>
               </tr>
@@ -321,7 +353,7 @@
       <div id="result-notice" class="rounded-xl border border-dashed border-amber-400 bg-amber-50 p-5 text-center">
         <svg class="mx-auto text-amber-500" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
         <p class="mt-2 text-sm font-medium text-amber-900">①の算定回数を入力してください</p>
-        <p class="mt-1 text-xs text-amber-800">初診・再診の算定回数をどれか1つ入力すると、ここに結果が表示されます。（対象従業員数は後から入力でも構いません）</p>
+        <p class="mt-1 text-xs text-amber-800">初診・再診・訪問診療の算定回数をどれか1つ入力すると、ここに結果が表示されます。（対象従業員数は後から入力でも構いません）</p>
       </div>
 
       <!-- 適用点数 -->

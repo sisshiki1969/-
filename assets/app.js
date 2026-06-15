@@ -70,7 +70,12 @@ let selectedPriorTierId = null;
 
 const STORAGE_KEY = 'baseup-simulator-v1';
 
-const PERSIST_NUMBER_IDS = ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep', 'staff-count'];
+const PERSIST_NUMBER_IDS = [
+  'm1-new', 'm1-rep', 'm1-home1', 'm1-home2',
+  'm2-new', 'm2-rep', 'm2-home1', 'm2-home2',
+  'm3-new', 'm3-rep', 'm3-home1', 'm3-home2',
+  'staff-count',
+];
 const PERSIST_RADIO_NAMES = ['rev-type', 'raise-type'];
 
 function saveState() {
@@ -120,9 +125,16 @@ function radioVal(name) {
   return el ? el.value : null;
 }
 
-const COUNT_NEW_IDS = ['m1-new', 'm2-new', 'm3-new'];
-const COUNT_REP_IDS = ['m1-rep', 'm2-rep', 'm3-rep'];
-const COUNT_IDS = ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep'];
+// 「初診相当」＝初診料＋訪問診療料Ⅰの1（同一建物居住者以外）
+// 「再診相当」＝再診料＋訪問診療料Ⅰの1の2（同一建物居住者）
+// 外来・在宅ベースアップ評価料は訪問同一建物以外を初診と、同一建物居住者を再診と同じ点数で算定する
+const COUNT_NEW_IDS   = ['m1-new', 'm2-new', 'm3-new'];
+const COUNT_REP_IDS   = ['m1-rep', 'm2-rep', 'm3-rep'];
+const COUNT_HOME1_IDS = ['m1-home1', 'm2-home1', 'm3-home1'];
+const COUNT_HOME2_IDS = ['m1-home2', 'm2-home2', 'm3-home2'];
+const COUNT_IDS = [
+  ...COUNT_NEW_IDS, ...COUNT_REP_IDS, ...COUNT_HOME1_IDS, ...COUNT_HOME2_IDS,
+];
 
 // 空欄を除いた平均（全て空欄なら0）
 function avgOfFilled(ids) {
@@ -139,9 +151,16 @@ function readInputs() {
   const staffRaw = $('staff-count').value.trim();
   const staffNum = Number(staffRaw);
   const hasStaff = staffRaw !== '' && Number.isFinite(staffNum) && staffNum >= 1;
+  const avgInitial   = avgOfFilled(COUNT_NEW_IDS);
+  const avgFollowup  = avgOfFilled(COUNT_REP_IDS);
+  const avgHomeAlone = avgOfFilled(COUNT_HOME1_IDS); // 同一建物居住者以外
+  const avgHomeGroup = avgOfFilled(COUNT_HOME2_IDS); // 同一建物居住者
   return {
-    avgNew: avgOfFilled(COUNT_NEW_IDS),
-    avgRep: avgOfFilled(COUNT_REP_IDS),
+    // 種別ごとの平均（表示用）
+    avgInitial, avgFollowup, avgHomeAlone, avgHomeGroup,
+    // 計算用に集約（初診相当・再診相当）
+    avgNew: avgInitial + avgHomeAlone,
+    avgRep: avgFollowup + avgHomeGroup,
     revType:   radioVal('rev-type')   || '1-only',
     raiseType: radioVal('raise-type') || 'continuous',
     staffCount: hasStaff ? staffNum : null,
@@ -660,10 +679,14 @@ function onCalc() {
 
 // 3か月平均は、入力済みの欄だけで算出して表示する（全て空欄なら「―」）
 function renderAverages() {
-  const anyNew = COUNT_NEW_IDS.some(id => $(id).value.trim() !== '');
-  const anyRep = COUNT_REP_IDS.some(id => $(id).value.trim() !== '');
-  $('avg-new').textContent = anyNew ? num1.format(avgOfFilled(COUNT_NEW_IDS)) : '―';
-  $('avg-rep').textContent = anyRep ? num1.format(avgOfFilled(COUNT_REP_IDS)) : '―';
+  const display = (ids, elId) => {
+    const any = ids.some(id => $(id).value.trim() !== '');
+    $(elId).textContent = any ? num1.format(avgOfFilled(ids)) : '―';
+  };
+  display(COUNT_NEW_IDS,   'avg-new');
+  display(COUNT_REP_IDS,   'avg-rep');
+  display(COUNT_HOME1_IDS, 'avg-home1');
+  display(COUNT_HOME2_IDS, 'avg-home2');
 }
 
 // 必須項目が未入力のときの表示（結果を伏せて案内を出す）
@@ -719,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('print-btn').addEventListener('click', () => window.print());
 
   // 数値入力欄ごとに input/change を直接リッスン
-  ['m1-new', 'm1-rep', 'm2-new', 'm2-rep', 'm3-new', 'm3-rep', 'staff-count'].forEach(id => {
+  [...COUNT_IDS, 'staff-count'].forEach(id => {
     const el = $(id);
     if (!el) return;
     el.addEventListener('input',  onCalc);
