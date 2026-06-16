@@ -326,7 +326,7 @@ function renderTierTable(r) {
     </table>
     <div id="tier-accordion" class="${open ? '' : 'hidden'} mt-3 overflow-hidden rounded-lg border border-brand-300 bg-brand-50/30">
       <div class="border-b border-brand-200 bg-brand-100/60 px-3 py-1.5 text-[11px] font-medium text-brand-900">改定後に算定する(Ⅱ)区分を選択してください</div>
-      <table class="w-full min-w-[420px] border-separate border-spacing-0 text-sm">
+      <div class="overflow-x-auto"><table class="w-full min-w-[420px] border-separate border-spacing-0 text-sm">
         <thead>
           <tr class="text-xs text-slate-500">
             <th class="border-b border-slate-200 bg-white px-3 py-2 text-left font-medium">区分</th>
@@ -335,7 +335,7 @@ function renderTierTable(r) {
           </tr>
         </thead>
         <tbody>${tierNoneRow}${tierRows}</tbody>
-      </table>
+      </table></div>
     </div>`;
 
   wrap.dataset.tierOpen = open ? '1' : '0';
@@ -461,7 +461,7 @@ function renderPriorTierTable(r) {
     </table>
     <div id="prior-tier-accordion" class="${open ? '' : 'hidden'} mt-3 overflow-hidden rounded-lg border border-amber-300 bg-amber-50/30">
       <div class="border-b border-amber-200 bg-amber-100/60 px-3 py-1.5 text-[11px] font-medium text-amber-900">改定前に算定していた(Ⅱ)区分を選択してください</div>
-      <table class="w-full min-w-[420px] border-separate border-spacing-0 text-sm">
+      <div class="overflow-x-auto"><table class="w-full min-w-[420px] border-separate border-spacing-0 text-sm">
         <thead>
           <tr class="text-xs text-slate-500">
             <th class="border-b border-slate-200 bg-white px-3 py-2 text-left font-medium">区分</th>
@@ -470,7 +470,7 @@ function renderPriorTierTable(r) {
           </tr>
         </thead>
         <tbody>${tierNoneRow}${tierRows}</tbody>
-      </table>
+      </table></div>
     </div>`;
 
   wrap.dataset.tierOpen = open ? '1' : '0';
